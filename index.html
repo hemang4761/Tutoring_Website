@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSH Tutoring</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <header>
+        <div class="container nav-container">
+            <a href="#" class="logo">JSH Tutoring</a>
+            <nav>
+                <ul>
+                    <li><a href="#services">Services</a></li>
+                    <li><a href="#about">About</a></li>
+                    <li><a href="#scheduling" class="btn-nav">Book Now</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <!-- Landing Page (Hero Section) -->
+        <section id="hero">
+            <div class="container hero-content">
+                <h1>Unlock Your Academic And College Success</h1>
+                <p class="hero-sub">Personalized tutoring and college consulting to build confidence and achieve results.</p>
+                <a href="#scheduling" class="btn-primary">Book Now</a>
+            </div>
+        </section>
+
+        <!-- Services Grid -->
+        <section id="services">
+            <div class="container">
+                <h2 class="section-title">Our Expertise</h2>
+                <div class="services-grid">
+                    <div class="service-card">
+                        <h3>Mathematics</h3>
+                        <p>From elementary arithmetic to multivariable calculus, we help students visualize and master complex concepts.</p>
+                    </div>
+                    <div class="service-card">
+                        <h3>Science</h3>
+                        <p>Deepen understanding from middle school general science to subjects beyond AP Physics and Chemistry.</p>
+                    </div>
+                    <div class="service-card">
+                        <h3>Test Prep</h3>
+                        <p>Strategic preparation for SAT, ACT, AP, and IB exams to maximize scores and preparedness.</p>
+                    </div>
+                    <div class="service-card">
+                        <h3>College Consulting</h3>
+                        <p>Work hands on with students to develop strategic college narratives and cohesive essays.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- About Us Section -->
+        <section id="about">
+            <div class="container">
+                <h2 class="section-title">Meet Our Expert Tutors</h2>
+                
+                <div class="tutors-grid">
+                    <!-- Tutor 1 -->
+                    <div class="tutor-card">
+                        <div class="tutor-img-placeholder">Photo</div>
+                        <h3>Hemang Mittal</h3>
+                        <p class="tutor-role"> Engineering & Humanities Tutor | Expert College Essay Consultant</p>
+                        <p class="tutor-bio">Years of experience in debate and essay-writing with deep knowledge of the college admissions process. Can tutor history and english essays, but also has four years of engineering, math, and comp sci experience beyond AP courses. </p>
+                    </div>
+
+                    <!-- Tutor 2 -->
+                    <div class="tutor-card">
+                        <div class="tutor-img-placeholder">Photo</div>
+                        <h3>Shlok Shah</h3>
+                        <p class="tutor-role">Math & Science Tutor | Expert Test Prep Mentor</p>
+                        <p class="tutor-bio">Specializes in tutoring math and science. Has experience beyond AP Calculus, Physics, and Chemistry, with 5s in all subjects. Four years of chemistry, three years of physics, and multivariable calculus under his belt. </p>
+                    </div>
+
+                    <!-- Tutor 3 -->
+                    <div class="tutor-card">
+                        <div class="tutor-img-placeholder">Photo</div>
+                        <h3>James Doherty</h3>
+                        <p class="tutor-role">Music & Computer Science Tutor | Expert Test Prep Mentor</p>
+                        <p class="tutor-bio">Specializes in tutoring across computer science, humanities, and test prep. Has experience in web development and classes beyond AP Comp Sci A and Calculus. Also has years of experience in music theory, jazz, and composition.</p>
+                    </div>
+                </div>
+
+                <div class="philosophy-container">
+                    <div class="philosophy">
+                        <h3>The JSH Guarantee</h3>
+                        <p>We believe in a personalized approach to education. Our goal is to foster critical thinking, build lasting confidence, and empower students to become independent learners and creators.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Scheduling Section (The Integration) -->
+        <section id="scheduling">
+            <div class="container">
+                <h2 class="section-title">Schedule a Session</h2>
+                <p class="schedule-intro">Select a time slot below to book your next session immediately.</p>
+                
+                <!-- 
+                   Responsive CSS Container for Google Sheets Iframe 
+                   Using /preview endpoint for a cleaner look without headers/toolbars 
+                -->
+                <!-- 
+                   Restored Google Sheet Embed.
+                   Optimized with strict container rules to minimize focus jumping.
+                -->
+                <!-- 
+                   Google Sheet Button (Replaces Embed)
+                   Opens the schedule in a new tab to avoid focus/scroll issues.
+                -->
+                <div class="scheduler-action">
+                    <p class="scheduler-note">View our real-time availability here:</p>
+                    <a href="https://docs.google.com/spreadsheets/d/1N_UxQLZzSoN9x7I4QC1x876-C9fEoRQrobDKCOQlipc/edit?gid=0#gid=0" target="_blank" class="btn-primary btn-outline">Open Live Schedule</a>
+                </div>
+
+                <!-- Google Form Booking Section -->
+                <div class="booking-form-section">
+                    <h3>First Time Booking?</h3>
+                    <p>Please fill out the form below to confirm your details and set up an onboarding meeting.</p>
+                    <div class="form-wrapper">
+                        <!-- Placeholder for Google Form Embed Code -->
+                        <iframe 
+                            src="https://docs.google.com/forms/d/e/1FAIpQLSe1iY0C8ue7aMa6FZamUWt83YZGo1IrxUaOwjQz265oQgwvww/viewform?usp=header/viewform?embedded=true" 
+                            width="640" 
+                            height="800" 
+                            frameborder="0" 
+                            marginheight="0" 
+                            marginwidth="0"
+                            title="Booking Form">
+                            Loading…
+                        </iframe>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container footer-content">
+            <p>&copy; 2026 JSH Tutoring. All rights reserved.</p>
+            <p>Contact: <a href="mailto:[jshtutor@gmail.com]">jshtutor@gmail.com</a></p>
+        </div>
+    </footer>
+
+</body>
+</html>
