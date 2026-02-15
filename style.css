@@ -285,7 +285,7 @@ nav a:hover {
     direction: rtl;
 }
 
-.offer-block--reverse > * {
+.offer-block--reverse>* {
     direction: ltr;
 }
 
@@ -362,6 +362,112 @@ nav a:hover {
 .offer-block--reverse .offer-block-content {
     border-left: none;
     border-right: 3px solid var(--primary-navy);
+}
+
+/* Specialized Mentorship Slider */
+.mentorship-slider-section {
+    margin-top: 3rem;
+    padding: 2rem 0;
+}
+
+.mentorship-slider-title {
+    font-size: 1.5rem;
+    color: var(--primary-navy);
+    margin-bottom: 1.5rem;
+    text-align: center;
+    font-weight: 700;
+}
+
+.mentorship-slider-title::after {
+    content: '';
+    display: block;
+    width: 60px;
+    height: 2px;
+    background: var(--accent-gold);
+    margin: 10px auto 0;
+}
+
+.mentorship-slider-container {
+    position: relative;
+    max-width: 800px;
+    margin: 0 auto;
+    overflow: hidden;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    background: var(--card-bg);
+}
+
+.mentorship-slider-track {
+    display: flex;
+    width: 300%;
+    animation: slide 9s infinite;
+}
+
+.mentorship-slide {
+    width: 33.333%;
+    flex-shrink: 0;
+    padding: 3rem 2rem;
+    text-align: center;
+    color: var(--light-text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+    position: relative;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.mentorship-slide::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(26, 44, 78, 0.7);
+    z-index: 1;
+}
+
+.mentorship-slide-content {
+    position: relative;
+    z-index: 2;
+}
+
+.mentorship-slide--exam {
+    background-image: url('https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=800&auto=format&fit=crop');
+}
+
+.mentorship-slide--math {
+    background-image: url('https://images.unsplash.com/photo-1509228468518-180dd4864904?w=800&auto=format&fit=crop');
+}
+
+.mentorship-slide--engineering {
+    background-image: url('https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=800&auto=format&fit=crop');
+}
+
+.mentorship-slide-content h4 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--light-text);
+    margin: 0;
+    font-family: var(--font-heading);
+}
+
+@keyframes slide {
+    0%, 28% {
+        transform: translateX(0);
+    }
+    33%, 61% {
+        transform: translateX(-33.333%);
+    }
+    66%, 94% {
+        transform: translateX(-66.666%);
+    }
+    100% {
+        transform: translateX(0);
+    }
 }
 
 .visually-hidden {
@@ -702,5 +808,24 @@ footer a {
 
     .form-wrapper iframe {
         height: 600px;
+    }
+
+    .mentorship-slider-section {
+        margin-top: 2rem;
+        padding: 1.5rem 0;
+    }
+
+    .mentorship-slider-title {
+        font-size: 1.3rem;
+        margin-bottom: 1rem;
+    }
+
+    .mentorship-slide {
+        padding: 2rem 1.5rem;
+        min-height: 150px;
+    }
+
+    .mentorship-slide-content h4 {
+        font-size: 1.4rem;
     }
 }
