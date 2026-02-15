@@ -1,155 +1,534 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JSH Tutoring</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
-</head>
-<body>
-
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bergen Tutoring Group</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Open+Sans:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
     <header>
-        <div class="container nav-container">
-            <a href="#" class="logo">JSH Tutoring</a>
-            <nav>
-                <ul>
-                    <li><a href="#services">Services</a></li>
-                    <li><a href="#about">About</a></li>
-                    <li><a href="#scheduling" class="btn-nav">Book Now</a></li>
-                </ul>
-            </nav>
-        </div>
+      <div class="container nav-container">
+        <a href="#" class="logo"> Bergen Tutoring Group</a>
+        <nav>
+          <ul>
+            <li><a href="#services">What We Offer</a></li>
+            <li><a href="#about">About Us</a></li>
+            <li><a href="#scheduling" class="btn-nav">Book Now</a></li>
+          </ul>
+        </nav>
+      </div>
     </header>
 
     <main>
-        <!-- Landing Page (Hero Section) -->
-        <section id="hero">
-            <div class="container hero-content">
-                <h1>Unlock Your Academic And College Success</h1>
-                <p class="hero-sub">Personalized tutoring and college consulting to build confidence and achieve results.</p>
-                <a href="#scheduling" class="btn-primary">Book Now</a>
+      <!-- Landing Page (Hero Section) -->
+      <section id="hero">
+        <div class="container hero-content">
+          <h1>Unlock Your Academic And College Success</h1>
+          <p class="hero-sub">
+            Personalized tutoring and college consulting to build confidence and
+            achieve results.
+          </p>
+          <a href="#scheduling" class="btn-primary">Book Now</a>
+        </div>
+      </section>
+
+      <!-- What We Offer: searchable course list, loose sections -->
+      <section id="services">
+        <div class="container">
+          <h2 class="section-title">What We Offer</h2>
+          <p class="expertise-feature">
+            We offer over 65 courses across math, science, humanities, test
+            prep, music, and more—from middle school through AP and IB.
+          </p>
+
+          <div class="expertise-search-wrap">
+            <label for="expertise-search" class="visually-hidden"
+              >Search courses</label
+            >
+            <input
+              type="search"
+              id="expertise-search"
+              class="expertise-search"
+              placeholder="I'm looking to learn... ( AP Calc AB, algebra, physics)…"
+              autocomplete="off"
+            />
+            <span class="expertise-search-icon" aria-hidden="true"></span>
+          </div>
+
+          <p class="expertise-no-results" id="expertise-no-results" hidden>
+            No courses match your search.
+          </p>
+
+          <div class="expertise-browse" id="expertise-sections">
+            <div class="expertise-group" data-subject="math">
+              <h4 class="expertise-subject-heading">Math</h4>
+              <ul class="course-list">
+                <li
+                  class="course-item"
+                  data-search="middle school math grades 6 8 algebra geometry precalculus calculus statistics"
+                >
+                  Middle school math (grades 6–8)
+                </li>
+                <li class="course-item" data-search="algebra 1">Algebra 1</li>
+                <li class="course-item" data-search="algebra 2">Algebra 2</li>
+                <li class="course-item" data-search="geometry">Geometry</li>
+                <li class="course-item" data-search="precalculus">
+                  Precalculus
+                </li>
+                <li class="course-item" data-search="ap calculus ab">
+                  AP Calculus AB
+                </li>
+                <li class="course-item" data-search="ap calculus bc">
+                  AP Calculus BC
+                </li>
+                <li class="course-item" data-search="ap precalculus">
+                  AP Precalculus
+                </li>
+                <li class="course-item" data-search="ap statistics">
+                  AP Statistics
+                </li>
+                <li
+                  class="course-item"
+                  data-search="ib math analysis approaches applications interpretation"
+                >
+                  Mathematics: Analysis &amp; Approaches HL/SL
+                </li>
+                <li
+                  class="course-item"
+                  data-search="ib math applications interpretation"
+                >
+                  Mathematics: Applications &amp; Interpretation HL/SL
+                </li>
+              </ul>
             </div>
-        </section>
-
-        <!-- Services Grid -->
-        <section id="services">
-            <div class="container">
-                <h2 class="section-title">Our Expertise</h2>
-                <div class="services-grid">
-                    <div class="service-card">
-                        <h3>Mathematics</h3>
-                        <p>From elementary arithmetic to multivariable calculus, we help students visualize and master complex concepts.</p>
-                    </div>
-                    <div class="service-card">
-                        <h3>Science</h3>
-                        <p>Deepen understanding from middle school general science to subjects beyond AP Physics and Chemistry.</p>
-                    </div>
-                    <div class="service-card">
-                        <h3>Test Prep</h3>
-                        <p>Strategic preparation for SAT, ACT, AP, and IB exams to maximize scores and preparedness.</p>
-                    </div>
-                    <div class="service-card">
-                        <h3>College Consulting</h3>
-                        <p>Work hands on with students to develop strategic college narratives and cohesive essays.</p>
-                    </div>
-                </div>
+            <div class="expertise-group" data-subject="science">
+              <h4 class="expertise-subject-heading">Science</h4>
+              <ul class="course-list">
+                <li
+                  class="course-item"
+                  data-search="middle school science grades 6 8 biology chemistry physics"
+                >
+                  Middle school science (grades 6–8)
+                </li>
+                <li class="course-item" data-search="biology honors intro">
+                  Biology (honors / intro)
+                </li>
+                <li class="course-item" data-search="chemistry honors intro">
+                  Chemistry (honors / intro)
+                </li>
+                <li class="course-item" data-search="physics honors intro">
+                  Physics (honors / intro)
+                </li>
+                <li class="course-item" data-search="ap biology">AP Biology</li>
+                <li class="course-item" data-search="ap chemistry">
+                  AP Chemistry
+                </li>
+                <li class="course-item" data-search="ap physics 1">
+                  AP Physics 1
+                </li>
+                <li class="course-item" data-search="ap physics 2">
+                  AP Physics 2
+                </li>
+                <li class="course-item" data-search="ap physics c mechanics">
+                  AP Physics C: Mechanics
+                </li>
+                <li class="course-item" data-search="ap physics c e m em">
+                  AP Physics C: E&amp;M
+                </li>
+                <li class="course-item" data-search="ap environmental">
+                  AP Environmental Science
+                </li>
+                <li
+                  class="course-item"
+                  data-search="ib biology chemistry physics environmental"
+                >
+                  Biology HL/SL
+                </li>
+                <li class="course-item" data-search="ib chemistry">
+                  Chemistry HL/SL
+                </li>
+                <li class="course-item" data-search="ib physics">
+                  Physics HL/SL
+                </li>
+                <li
+                  class="course-item"
+                  data-search="environmental systems societies"
+                >
+                  Environmental Systems &amp; Societies
+                </li>
+              </ul>
             </div>
-        </section>
-
-        <!-- About Us Section -->
-        <section id="about">
-            <div class="container">
-                <h2 class="section-title">Meet Our Expert Tutors</h2>
-                
-                <div class="tutors-grid">
-                    <!-- Tutor 1 -->
-                    <div class="tutor-card">
-                        <div class="tutor-img-placeholder">Photo</div>
-                        <h3>Hemang Mittal</h3>
-                        <p class="tutor-role"> Engineering & Humanities Tutor | Expert College Essay Consultant</p>
-                        <p class="tutor-bio">Years of experience in debate and essay-writing with deep knowledge of the college admissions process. Can tutor history and english essays, but also has four years of engineering, math, and comp sci experience beyond AP courses. </p>
-                    </div>
-
-                    <!-- Tutor 2 -->
-                    <div class="tutor-card">
-                        <div class="tutor-img-placeholder">Photo</div>
-                        <h3>Shlok Shah</h3>
-                        <p class="tutor-role">Math & Science Tutor | Expert Test Prep Mentor</p>
-                        <p class="tutor-bio">Specializes in tutoring math and science. Has experience beyond AP Calculus, Physics, and Chemistry, with 5s in all subjects. Four years of chemistry, three years of physics, and multivariable calculus under his belt. </p>
-                    </div>
-
-                    <!-- Tutor 3 -->
-                    <div class="tutor-card">
-                        <div class="tutor-img-placeholder">Photo</div>
-                        <h3>James Doherty</h3>
-                        <p class="tutor-role">Music & Computer Science Tutor | Expert Test Prep Mentor</p>
-                        <p class="tutor-bio">Specializes in tutoring across computer science, humanities, and test prep. Has experience in web development and classes beyond AP Comp Sci A and Calculus. Also has years of experience in music theory, jazz, and composition.</p>
-                    </div>
-                </div>
-
-                <div class="philosophy-container">
-                    <div class="philosophy">
-                        <h3>The JSH Guarantee</h3>
-                        <p>We believe in a personalized approach to education. Our goal is to foster critical thinking, build lasting confidence, and empower students to become independent learners and creators.</p>
-                    </div>
-                </div>
+            <div class="expertise-group" data-subject="humanities">
+              <h4 class="expertise-subject-heading">Humanities</h4>
+              <ul class="course-list">
+                <li
+                  class="course-item"
+                  data-search="middle school english history"
+                >
+                  Middle school English &amp; history
+                </li>
+                <li
+                  class="course-item"
+                  data-search="english 9 12 composition literature"
+                >
+                  English 9–12 (composition, literature)
+                </li>
+                <li class="course-item" data-search="us history intro honors">
+                  U.S. History (intro / honors)
+                </li>
+                <li
+                  class="course-item"
+                  data-search="world history intro honors"
+                >
+                  World History (intro / honors)
+                </li>
+                <li
+                  class="course-item"
+                  data-search="essay writing reading comprehension"
+                >
+                  Essay writing &amp; reading comprehension
+                </li>
+                <li
+                  class="course-item"
+                  data-search="ap english language composition"
+                >
+                  AP English Language &amp; Composition
+                </li>
+                <li
+                  class="course-item"
+                  data-search="ap english literature composition"
+                >
+                  AP English Literature &amp; Composition
+                </li>
+                <li class="course-item" data-search="ap us history">
+                  AP U.S. History
+                </li>
+                <li class="course-item" data-search="ap world history">
+                  AP World History
+                </li>
+                <li class="course-item" data-search="ap european history">
+                  AP European History
+                </li>
+                <li class="course-item" data-search="ap government politics">
+                  AP U.S. Government &amp; Politics
+                </li>
+                <li class="course-item" data-search="ap comparative government">
+                  AP Comparative Government &amp; Politics
+                </li>
+                <li class="course-item" data-search="ap psychology">
+                  AP Psychology
+                </li>
+                <li class="course-item" data-search="ap human geography">
+                  AP Human Geography
+                </li>
+                <li class="course-item" data-search="ap art history">
+                  AP Art History
+                </li>
+                <li
+                  class="course-item"
+                  data-search="ib language literature history economics psychology politics philosophy"
+                >
+                  Language A: Literature HL/SL
+                </li>
+                <li class="course-item" data-search="ib language literature">
+                  Language A: Language &amp; Literature HL/SL
+                </li>
+                <li class="course-item" data-search="ib history">
+                  History HL/SL
+                </li>
+                <li class="course-item" data-search="ib economics">
+                  Economics HL/SL
+                </li>
+                <li class="course-item" data-search="ib psychology">
+                  Psychology HL/SL
+                </li>
+                <li class="course-item" data-search="ib global politics">
+                  Global Politics HL/SL
+                </li>
+                <li class="course-item" data-search="ib philosophy">
+                  Philosophy HL/SL
+                </li>
+              </ul>
             </div>
-        </section>
+            <div class="expertise-group" data-subject="test prep">
+              <h4 class="expertise-subject-heading">Test Prep</h4>
+              <ul class="course-list">
+                <li class="course-item" data-search="sat">SAT</li>
+                <li class="course-item" data-search="act">ACT</li>
+                <li class="course-item" data-search="ap exams">
+                  AP exams (all subjects we tutor)
+                </li>
+                <li class="course-item" data-search="ib exams">
+                  IB exams (all subjects we tutor)
+                </li>
+                <li class="course-item" data-search="sat subject tests">
+                  SAT Subject Tests
+                </li>
+              </ul>
+            </div>
+            <div class="expertise-group" data-subject="music">
+              <h4 class="expertise-subject-heading">Music Theory</h4>
+              <ul class="course-list">
+                <li
+                  class="course-item"
+                  data-search="fundamentals notation rhythm scales"
+                >
+                  Fundamentals (notation, rhythm, scales)
+                </li>
+                <li class="course-item" data-search="harmony composition intro">
+                  Harmony &amp; composition (intro)
+                </li>
+                <li class="course-item" data-search="ap music theory">
+                  AP Music Theory
+                </li>
+                <li class="course-item" data-search="ib music">Music HL/SL</li>
+              </ul>
+            </div>
+            <div class="expertise-group" data-subject="other">
+              <h4 class="expertise-subject-heading">Other</h4>
+              <ul class="course-list">
+                <li class="course-item" data-search="intro computer science">
+                  Intro to computer science
+                </li>
+                <li class="course-item" data-search="economics intro honors">
+                  Economics (intro / honors)
+                </li>
+                <li class="course-item" data-search="ap computer science a">
+                  AP Computer Science A
+                </li>
+                <li
+                  class="course-item"
+                  data-search="ap computer science principles"
+                >
+                  AP Computer Science Principles
+                </li>
+                <li
+                  class="course-item"
+                  data-search="ap microeconomics macroeconomics"
+                >
+                  AP Microeconomics
+                </li>
+                <li class="course-item" data-search="ap macroeconomics">
+                  AP Macroeconomics
+                </li>
+                <li class="course-item" data-search="ib computer science">
+                  Computer Science HL/SL
+                </li>
+                <li class="course-item" data-search="ib economics">
+                  Economics HL/SL
+                </li>
+                <li class="course-item" data-search="ib business management">
+                  Business Management HL/SL
+                </li>
+              </ul>
+            </div>
+            <div
+              class="expertise-group expertise-group--college"
+              data-subject="college"
+            >
+              <h4 class="expertise-subject-heading">College Consulting</h4>
+              <p class="expertise-college-desc">
+                One-on-one support to build a strong application: narrative
+                strategy, essay drafting and revision, and list-building.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
 
-        <!-- Scheduling Section (The Integration) -->
-        <section id="scheduling">
-            <div class="container">
-                <h2 class="section-title">Schedule a Session</h2>
-                <p class="schedule-intro">For enrolled students, select a time slot below to book your next session immediately.</p>
-                
-                <!-- 
+      <!-- About Us Section -->
+      <section id="about">
+        <div class="container">
+          <h2 class="section-title">Meet The Team</h2>
+
+          <div class="tutors-grid">
+            <!-- Tutor 1 -->
+            <div class="tutor-card">
+              <div class="tutor-img-placeholder">Photo</div>
+              <h3>Hemang Mittal</h3>
+              <p class="tutor-role">
+                Engineering & Humanities Tutor | Expert College Essay Consultant
+              </p>
+              <p class="tutor-bio">
+                Years of experience in debate and essay-writing with deep
+                knowledge of the college admissions process. Can tutor history
+                and english essays, but also has four years of engineering,
+                math, and comp sci experience beyond AP courses.
+              </p>
+            </div>
+
+            <!-- Tutor 2 -->
+            <div class="tutor-card">
+              <div class="tutor-img-placeholder">Photo</div>
+              <h3>Shlok Shah</h3>
+              <p class="tutor-role">
+                Math & Science Tutor | Expert Test Prep Mentor
+              </p>
+              <p class="tutor-bio">
+                Specializes in tutoring math and science. Has experience beyond
+                AP Calculus, Physics, and Chemistry, with 5s in all subjects.
+                Four years of chemistry, three years of physics, and
+                multivariable calculus under his belt.
+              </p>
+            </div>
+
+            <!-- Tutor 3 -->
+            <div class="tutor-card">
+              <div class="tutor-img-placeholder">Photo</div>
+              <h3>James Doherty</h3>
+              <p class="tutor-role">
+                Music & Computer Science Tutor | Expert Test Prep Mentor
+              </p>
+              <p class="tutor-bio">
+                Specializes in tutoring across computer science, humanities, and
+                test prep. Has experience in web development and classes beyond
+                AP Comp Sci A and Calculus. Also has years of experience in
+                music theory, jazz, and composition.
+              </p>
+            </div>
+          </div>
+
+          <div class="philosophy-container">
+            <div class="philosophy">
+              <h3>The JSH Guarantee</h3>
+              <p>
+                We believe in a personalized approach to education. Our goal is
+                to foster critical thinking, build lasting confidence, and
+                empower students to become independent learners and creators.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Scheduling Section (The Integration) -->
+      <section id="scheduling">
+        <div class="container">
+          <h2 class="section-title">Schedule a Session</h2>
+          <p class="schedule-intro">
+            For enrolled students, select a time slot below to book your next
+            session immediately.
+          </p>
+
+          <!-- 
                    Responsive CSS Container for Google Sheets Iframe 
                    Using /preview endpoint for a cleaner look without headers/toolbars 
                 -->
-                <!-- 
+          <!-- 
                    Restored Google Sheet Embed.
                    Optimized with strict container rules to minimize focus jumping.
                 -->
-                <!-- 
+          <!-- 
                    Google Sheet Button (Replaces Embed)
                    Opens the schedule in a new tab to avoid focus/scroll issues.
                 -->
-                <div class="scheduler-action">
-                    <p class="scheduler-note">View our real-time availability here:</p>
-                    <a href="https://docs.google.com/spreadsheets/d/1N_UxQLZzSoN9x7I4QC1x876-C9fEoRQrobDKCOQlipc/edit?gid=0#gid=0" target="_blank" class="btn-primary btn-outline">Open Live Schedule</a>
-                </div>
+          <div class="scheduler-action">
+            <p class="scheduler-note">View our real-time availability here:</p>
+            <a
+              href="https://docs.google.com/spreadsheets/d/1N_UxQLZzSoN9x7I4QC1x876-C9fEoRQrobDKCOQlipc/edit?gid=0#gid=0"
+              target="_blank"
+              class="btn-primary btn-outline"
+              >Open Live Schedule</a
+            >
+          </div>
 
-                <!-- Google Form Booking Section -->
-                <div class="booking-form-section">
-                    <h3>First Time Booking?</h3>
-                    <p>Please fill out the form below to confirm your details and set up an onboarding meeting.</p>
-                    <div class="form-wrapper">
-                        <!-- Placeholder for Google Form Embed Code -->
-                        <iframe 
-                            src="https://docs.google.com/forms/d/e/1FAIpQLSe1iY0C8ue7aMa6FZamUWt83YZGo1IrxUaOwjQz265oQgwvww/viewform?usp=header/viewform?embedded=true" 
-                            width="640" 
-                            height="800" 
-                            frameborder="0" 
-                            marginheight="0" 
-                            marginwidth="0"
-                            title="Booking Form">
-                            Loading…
-                        </iframe>
-                    </div>
-                </div>
+          <!-- Google Form Booking Section -->
+          <div class="booking-form-section">
+            <h3>First Time Booking?</h3>
+            <p>
+              Please fill out the form below to confirm your details and set up
+              an onboarding meeting.
+            </p>
+            <div class="form-wrapper">
+              <!-- Placeholder for Google Form Embed Code -->
+              <iframe
+                src="https://docs.google.com/forms/d/e/1FAIpQLSe1iY0C8ue7aMa6FZamUWt83YZGo1IrxUaOwjQz265oQgwvww/viewform?usp=header/viewform?embedded=true"
+                width="640"
+                height="800"
+                frameborder="0"
+                marginheight="0"
+                marginwidth="0"
+                title="Booking Form"
+              >
+                Loading…
+              </iframe>
             </div>
-        </section>
+          </div>
+        </div>
+      </section>
     </main>
 
     <footer>
-        <div class="container footer-content">
-            <p>&copy; 2026 JSH Tutoring. All rights reserved.</p>
-            <p>Contact: <a href="mailto:[jshtutor@gmail.com]">jshtutor@gmail.com</a></p>
-        </div>
-    </footer> 
-
-</body>
+      <div class="container footer-content">
+        <p>&copy; 2026 JSH Tutoring. All rights reserved.</p>
+        <p>
+          Contact: <a href="mailto:[jshtutor@gmail.com]">jshtutor@gmail.com</a>
+        </p>
+      </div>
+    </footer>
+    <script>
+      (function () {
+        var searchEl = document.getElementById("expertise-search");
+        var container = document.getElementById("expertise-sections");
+        var noResults = document.getElementById("expertise-no-results");
+        if (!searchEl || !container || !noResults) return;
+        var groups = container.querySelectorAll(".expertise-group");
+        var allItems = container.querySelectorAll(".course-item");
+        function matchesQuery(el, q) {
+          var search = (el.getAttribute("data-search") || "").toLowerCase();
+          var text = (el.textContent || "").toLowerCase();
+          var combined = search + " " + text;
+          var tokens = q.split(/\s+/).filter(Boolean);
+          for (var i = 0; i < tokens.length; i++) {
+            if (combined.indexOf(tokens[i]) === -1) return false;
+          }
+          return true;
+        }
+        function filter() {
+          var q = (searchEl.value || "").trim().toLowerCase();
+          var hasQuery = q.length > 0;
+          container.classList.toggle("is-searching", hasQuery);
+          var visibleCount = 0;
+          groups.forEach(function (group) {
+            var heading = group.querySelector(".expertise-subject-heading");
+            var subjectName = heading ? heading.textContent.trim() : "";
+            var list = group.querySelector(".course-list");
+            var collegeGroup = group.classList.contains(
+              "expertise-group--college",
+            );
+            if (collegeGroup) {
+              var showCollege =
+                !hasQuery || /college|consulting|essay|application/.test(q);
+              group.classList.toggle("is-hidden", !showCollege);
+              if (showCollege) visibleCount++;
+              return;
+            }
+            if (!list) return;
+            var items = list.querySelectorAll(".course-item");
+            var groupVisible = 0;
+            items.forEach(function (item) {
+              var show = !hasQuery || matchesQuery(item, q);
+              item.classList.toggle("is-hidden", !show);
+              if (show) {
+                groupVisible++;
+                item.setAttribute("data-subject", subjectName);
+              }
+            });
+            group.classList.toggle("is-hidden", groupVisible === 0);
+            visibleCount += groupVisible;
+          });
+          noResults.hidden = visibleCount > 0 || !hasQuery;
+        }
+        searchEl.addEventListener("input", filter);
+        searchEl.addEventListener("search", filter);
+      })();
+    </script>
+  </body>
 </html>
