@@ -18,6 +18,7 @@
         <a href="#" class="logo"> Bergen Tutoring Group</a>
         <nav>
           <ul>
+            <li><a href="#who">Who We Are</a></li>
             <li><a href="#services">What We Offer</a></li>
             <li><a href="#about">About Us</a></li>
             <li><a href="#scheduling" class="btn-nav">Book Now</a></li>
@@ -39,13 +40,87 @@
         </div>
       </section>
 
-      <!-- What We Offer: searchable course list, loose sections -->
+      <!-- What We Offer: intro blocks + searchable course list -->
       <section id="services">
         <div class="container">
           <h2 class="section-title">What We Offer</h2>
+
+          <div class="offer-blocks">
+            <article class="offer-block">
+              <div class="offer-block-img-wrap">
+                <img
+                  src="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=600&auto=format&fit=crop"
+                  alt=""
+                  width="600"
+                  height="400"
+                />
+              </div>
+              <div class="offer-block-content">
+                <h3 class="offer-block-title">Academic Tutoring</h3>
+                <p>
+                  We offer
+                  <strong>K–12 tutoring in over 40 courses</strong> across
+                  humanities, math, science, music, computer science, and more.
+                  From middle school foundations through advanced
+                  coursework—including
+                  <span class="highlight highlight--gold"
+                    >more than 25 AP courses</span
+                  >. To name a few: <strong>AP Physics C</strong> (Mechanics and
+                  E&amp;M), <strong>AP Calculus BC</strong>,
+                  <strong>AP Chemistry</strong>,
+                  <strong>AP English Literature</strong>,
+                  <strong>AP U.S. History</strong>, and
+                  <strong>AP Computer Science A</strong>.
+                </p>
+              </div>
+            </article>
+
+            <article class="offer-block offer-block--reverse">
+              <div class="offer-block-img-wrap">
+                <img
+                  src="https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=600&auto=format&fit=crop"
+                  alt=""
+                  width="600"
+                  height="400"
+                />
+              </div>
+              <div class="offer-block-content">
+                <h3 class="offer-block-title">Test Prep</h3>
+                <p>
+                  Learn how to prep for the <strong>SAT</strong>,
+                  <strong>ACT</strong>, or any of our academic exams—including
+                  AP and IB—with tutors who have been there. Our tutors are
+                  highly qualified, earning 5s on AP tests in their respective
+                  subjects. they have taken, and every tutor has scored
+                  <span class="highlight highlight--navy">at least 1500</span>
+                  on the SAT.
+                </p>
+              </div>
+            </article>
+
+            <article class="offer-block">
+              <div class="offer-block-img-wrap">
+                <img
+                  src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=600&auto=format&fit=crop"
+                  alt=""
+                  width="600"
+                  height="400"
+                />
+              </div>
+              <div class="offer-block-content">
+                <h3 class="offer-block-title">College Consulting</h3>
+                <p>
+                  We know what it takes to get into
+                  <strong>top colleges</strong>—and we can help you understand
+                  the whole process and answer any questions about applying.
+                </p>
+              </div>
+            </article>
+          </div>
+
           <p class="expertise-feature">
-            We offer over 65 courses across math, science, humanities, test
-            prep, music, and more—from middle school through AP and IB.
+            Search our full course list below—over 65 courses from middle school
+            through AP and IB.
           </p>
 
           <div class="expertise-search-wrap">
@@ -74,11 +149,15 @@
                   class="course-item"
                   data-search="middle school math grades 6 8 algebra geometry precalculus calculus statistics"
                 >
-                  Middle school math (grades 6–8)
+                  Middle and Elementary school math (grades K–8)
                 </li>
                 <li class="course-item" data-search="algebra 1">Algebra 1</li>
                 <li class="course-item" data-search="algebra 2">Algebra 2</li>
                 <li class="course-item" data-search="geometry">Geometry</li>
+                <li class="course-item" data-search="geometry">Trigonometry</li>
+                <li class="course-item" data-search="geometry">Statistics</li>
+                <li class="course-item" data-search="geometry">Calculus 1</li>
+                <li class="course-item" data-search="geometry">Calculus 2</li>
                 <li class="course-item" data-search="precalculus">
                   Precalculus
                 </li>
@@ -94,18 +173,6 @@
                 <li class="course-item" data-search="ap statistics">
                   AP Statistics
                 </li>
-                <li
-                  class="course-item"
-                  data-search="ib math analysis approaches applications interpretation"
-                >
-                  Mathematics: Analysis &amp; Approaches HL/SL
-                </li>
-                <li
-                  class="course-item"
-                  data-search="ib math applications interpretation"
-                >
-                  Mathematics: Applications &amp; Interpretation HL/SL
-                </li>
               </ul>
             </div>
             <div class="expertise-group" data-subject="science">
@@ -115,7 +182,7 @@
                   class="course-item"
                   data-search="middle school science grades 6 8 biology chemistry physics"
                 >
-                  Middle school science (grades 6–8)
+                  Middle and Elementary school science (grades K–8)
                 </li>
                 <li class="course-item" data-search="biology honors intro">
                   Biology (honors / intro)
@@ -142,27 +209,16 @@
                 <li class="course-item" data-search="ap physics c e m em">
                   AP Physics C: E&amp;M
                 </li>
-                <li class="course-item" data-search="ap environmental">
-                  AP Environmental Science
-                </li>
                 <li
                   class="course-item"
                   data-search="ib biology chemistry physics environmental"
                 >
-                  Biology HL/SL
+                  Biology SL
                 </li>
                 <li class="course-item" data-search="ib chemistry">
-                  Chemistry HL/SL
+                  Chemistry SL
                 </li>
-                <li class="course-item" data-search="ib physics">
-                  Physics HL/SL
-                </li>
-                <li
-                  class="course-item"
-                  data-search="environmental systems societies"
-                >
-                  Environmental Systems &amp; Societies
-                </li>
+                <li class="course-item" data-search="ib physics">Physics SL</li>
               </ul>
             </div>
             <div class="expertise-group" data-subject="humanities">
@@ -210,26 +266,11 @@
                 <li class="course-item" data-search="ap us history">
                   AP U.S. History
                 </li>
-                <li class="course-item" data-search="ap world history">
-                  AP World History
-                </li>
-                <li class="course-item" data-search="ap european history">
-                  AP European History
-                </li>
                 <li class="course-item" data-search="ap government politics">
                   AP U.S. Government &amp; Politics
                 </li>
-                <li class="course-item" data-search="ap comparative government">
-                  AP Comparative Government &amp; Politics
-                </li>
                 <li class="course-item" data-search="ap psychology">
                   AP Psychology
-                </li>
-                <li class="course-item" data-search="ap human geography">
-                  AP Human Geography
-                </li>
-                <li class="course-item" data-search="ap art history">
-                  AP Art History
                 </li>
                 <li
                   class="course-item"
@@ -246,15 +287,6 @@
                 <li class="course-item" data-search="ib economics">
                   Economics HL/SL
                 </li>
-                <li class="course-item" data-search="ib psychology">
-                  Psychology HL/SL
-                </li>
-                <li class="course-item" data-search="ib global politics">
-                  Global Politics HL/SL
-                </li>
-                <li class="course-item" data-search="ib philosophy">
-                  Philosophy HL/SL
-                </li>
               </ul>
             </div>
             <div class="expertise-group" data-subject="test prep">
@@ -268,23 +300,11 @@
                 <li class="course-item" data-search="ib exams">
                   IB exams (all subjects we tutor)
                 </li>
-                <li class="course-item" data-search="sat subject tests">
-                  SAT Subject Tests
-                </li>
               </ul>
             </div>
             <div class="expertise-group" data-subject="music">
               <h4 class="expertise-subject-heading">Music Theory</h4>
               <ul class="course-list">
-                <li
-                  class="course-item"
-                  data-search="fundamentals notation rhythm scales"
-                >
-                  Fundamentals (notation, rhythm, scales)
-                </li>
-                <li class="course-item" data-search="harmony composition intro">
-                  Harmony &amp; composition (intro)
-                </li>
                 <li class="course-item" data-search="ap music theory">
                   AP Music Theory
                 </li>
@@ -309,6 +329,34 @@
                 >
                   AP Computer Science Principles
                 </li>
+                <li class="course-item" data-search="c programming c language">
+                  C Programming
+                </li>
+                <li class="course-item" data-search="python programming coding">
+                  Python
+                </li>
+                <li class="course-item" data-search="java programming coding">
+                  Java
+                </li>
+                <li
+                  class="course-item"
+                  data-search="html css web design web development"
+                >
+                  HTML/CSS
+                </li>
+                <li
+                  class="course-item"
+                  data-search="javascript js web development"
+                >
+                  JavaScript (JS)
+                </li>
+                <li
+                  class="course-item"
+                  data-search="data structures algorithms"
+                >
+                  Data Structures
+                </li>
+
                 <li
                   class="course-item"
                   data-search="ap microeconomics macroeconomics"
@@ -326,6 +374,18 @@
                 </li>
                 <li class="course-item" data-search="ib business management">
                   Business Management HL/SL
+                </li>
+                <li
+                  class="course-item"
+                  data-search="bca exam bergen county academies admissions high school entrance exam bergen tech academics"
+                >
+                  BCA/BCTS (Bergen Academies & Technical Schools Entrance Exam)
+                </li>
+                <li
+                  class="course-item"
+                  data-search="ssat secondary school admission test high school entrance exam"
+                >
+                  SSAT (Secondary School Admission Test)
                 </li>
               </ul>
             </div>
@@ -347,6 +407,12 @@
       <section id="about">
         <div class="container">
           <h2 class="section-title">Meet The Team</h2>
+          <div class="tutor-card about-card" style="margin-bottom: 20px">
+            <p class="tutor-bio">
+              We are a group of <strong>high school seniors</strong> and tutors
+              from <strong>Bergen County Academies</strong>.
+            </p>
+          </div>
 
           <div class="tutors-grid">
             <!-- Tutor 1 -->
@@ -394,16 +460,11 @@
               </p>
             </div>
           </div>
-
-          <div class="philosophy-container">
-            <div class="philosophy">
-              <h3>The JSH Guarantee</h3>
-              <p>
-                We believe in a personalized approach to education. Our goal is
-                to foster critical thinking, build lasting confidence, and
-                empower students to become independent learners and creators.
-              </p>
-            </div>
+          <div class="tutor-card about-card" style="margin-bottom: 20px">
+            <p class="tutor-bio">
+              Personalized tutoring and college consulting to build confidence
+              and achieve results.
+            </p>
           </div>
         </div>
       </section>
@@ -494,6 +555,7 @@
         function filter() {
           var q = (searchEl.value || "").trim().toLowerCase();
           var hasQuery = q.length > 0;
+          container.classList.toggle("has-query", hasQuery);
           container.classList.toggle("is-searching", hasQuery);
           var visibleCount = 0;
           groups.forEach(function (group) {
