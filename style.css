@@ -591,9 +591,21 @@ nav a:hover {
     font-size: 2.5rem;
     font-weight: 700;
     color: var(--light-text);
-    margin: 0;
+    margin: 0 0 1.5rem 0;
     font-family: var(--font-heading);
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.mentorship-slide-description {
+    font-size: 1.2rem;
+    color: var(--light-text);
+    line-height: 1.6;
+    margin: 0;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4);
+    opacity: 0.95;
 }
 
 /* Navigation Arrows */
@@ -1071,6 +1083,12 @@ footer a {
 
     .mentorship-slide-content h4 {
         font-size: 1.8rem;
+        margin-bottom: 1rem;
+    }
+
+    .mentorship-slide-description {
+        font-size: 1rem;
+        max-width: 90%;
     }
 
     .mentorship-slider-arrow {
