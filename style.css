@@ -409,16 +409,100 @@ nav a:hover {
     border-right: 3px solid var(--primary-navy);
 }
 
+/* College Consulting Section */
+.college-consulting-section {
+    margin-top: 4rem;
+    padding: 3rem 0;
+    background: linear-gradient(135deg, var(--primary-navy) 0%, #2a3f5f 100%);
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    position: relative;
+    overflow: hidden;
+}
+
+.college-consulting-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=1200&auto=format&fit=crop') center/cover;
+    opacity: 0.15;
+    z-index: 1;
+}
+
+.college-consulting-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 2rem;
+}
+
+.college-consulting-title {
+    font-size: 2.5rem;
+    color: var(--light-text);
+    margin-bottom: 1.5rem;
+    font-weight: 700;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.college-consulting-title::after {
+    content: '';
+    display: block;
+    width: 100px;
+    height: 4px;
+    background: var(--accent-gold);
+    margin: 15px auto 0;
+    border-radius: 2px;
+}
+
+.college-consulting-description {
+    font-size: 1.15rem;
+    color: var(--light-text);
+    line-height: 1.7;
+    margin-bottom: 2rem;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.college-consulting-description strong {
+    color: var(--accent-gold);
+    font-weight: 700;
+}
+
+.college-consulting-cta {
+    display: inline-block;
+    background: var(--accent-gold);
+    color: var(--primary-navy);
+    padding: 16px 40px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 1.1rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(255, 204, 0, 0.3);
+    text-decoration: none;
+}
+
+.college-consulting-cta:hover {
+    background: #e6b800;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(255, 204, 0, 0.4);
+}
+
 /* Specialized Mentorship Slider */
 .mentorship-slider-section {
     margin-top: 3rem;
-    padding: 2rem 0;
+    padding: 3rem 0;
 }
 
 .mentorship-slider-title {
-    font-size: 1.5rem;
+    font-size: 2rem;
     color: var(--primary-navy);
-    margin-bottom: 1.5rem;
+    margin-bottom: 2rem;
     text-align: center;
     font-weight: 700;
 }
@@ -426,38 +510,49 @@ nav a:hover {
 .mentorship-slider-title::after {
     content: '';
     display: block;
-    width: 60px;
-    height: 2px;
+    width: 80px;
+    height: 3px;
     background: var(--accent-gold);
-    margin: 10px auto 0;
+    margin: 15px auto 0;
 }
 
 .mentorship-slider-container {
     position: relative;
-    max-width: 800px;
+    max-width: 1000px;
     margin: 0 auto;
-    overflow: hidden;
-    border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
     background: var(--card-bg);
+    padding: 0;
+}
+
+.mentorship-slider-wrapper {
+    position: relative;
+    overflow: hidden;
+    border-radius: 16px;
+    width: 100%;
+    height: 350px;
 }
 
 .mentorship-slider-track {
     display: flex;
-    width: 300%;
-    animation: slide 9s infinite;
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform;
+    height: 100%;
 }
 
 .mentorship-slide {
-    width: 33.333%;
+    width: 100%;
+    min-width: 100%;
     flex-shrink: 0;
-    padding: 3rem 2rem;
+    padding: 5rem 3rem;
     text-align: center;
     color: var(--light-text);
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 200px;
+    min-height: 350px;
+    height: 100%;
     position: relative;
     background-size: cover;
     background-position: center;
@@ -481,38 +576,106 @@ nav a:hover {
 }
 
 .mentorship-slide--exam {
-    background-image: url('https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=800&auto=format&fit=crop');
+    background-image: url('https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=1200&auto=format&fit=crop');
 }
 
 .mentorship-slide--math {
-    background-image: url('https://images.unsplash.com/photo-1509228468518-180dd4864904?w=800&auto=format&fit=crop');
+    background-image: url('https://images.unsplash.com/photo-1509228468518-180dd4864904?w=1200&auto=format&fit=crop');
 }
 
 .mentorship-slide--engineering {
-    background-image: url('https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=800&auto=format&fit=crop');
+    background-image: url('https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=1200&auto=format&fit=crop');
 }
 
 .mentorship-slide-content h4 {
-    font-size: 1.8rem;
+    font-size: 2.5rem;
     font-weight: 700;
     color: var(--light-text);
     margin: 0;
     font-family: var(--font-heading);
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
 }
 
-@keyframes slide {
-    0%, 28% {
-        transform: translateX(0);
-    }
-    33%, 61% {
-        transform: translateX(-33.333%);
-    }
-    66%, 94% {
-        transform: translateX(-66.666%);
-    }
-    100% {
-        transform: translateX(0);
-    }
+/* Navigation Arrows */
+.mentorship-slider-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--primary-navy);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+}
+
+.mentorship-slider-arrow:hover {
+    background: var(--accent-gold);
+    color: var(--primary-navy);
+    transform: translateY(-50%) scale(1.1);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+}
+
+.mentorship-slider-arrow:active {
+    transform: translateY(-50%) scale(0.95);
+}
+
+.mentorship-slider-arrow--prev {
+    left: 20px;
+}
+
+.mentorship-slider-arrow--next {
+    right: 20px;
+}
+
+.mentorship-slider-arrow svg {
+    width: 24px;
+    height: 24px;
+}
+
+/* Navigation Dots */
+.mentorship-slider-dots {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    display: flex;
+    gap: 12px;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 30px;
+    backdrop-filter: blur(5px);
+}
+
+.mentorship-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    background: transparent;
+    cursor: pointer;
+    padding: 0;
+    transition: all 0.3s ease;
+}
+
+.mentorship-dot:hover {
+    background: rgba(255, 255, 255, 0.5);
+    transform: scale(1.2);
+}
+
+.mentorship-dot.active {
+    background: var(--accent-gold);
+    border-color: var(--accent-gold);
+    width: 32px;
+    border-radius: 6px;
 }
 
 .visually-hidden {
@@ -884,20 +1047,87 @@ footer a {
 
     .mentorship-slider-section {
         margin-top: 2rem;
-        padding: 1.5rem 0;
+        padding: 2rem 0;
     }
 
     .mentorship-slider-title {
-        font-size: 1.3rem;
-        margin-bottom: 1rem;
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .mentorship-slider-container {
+        max-width: 100%;
+        margin: 0 10px;
+    }
+
+    .mentorship-slider-wrapper {
+        height: 280px;
     }
 
     .mentorship-slide {
-        padding: 2rem 1.5rem;
-        min-height: 150px;
+        padding: 3rem 2rem;
+        min-height: 280px;
     }
 
     .mentorship-slide-content h4 {
-        font-size: 1.4rem;
+        font-size: 1.8rem;
+    }
+
+    .mentorship-slider-arrow {
+        width: 40px;
+        height: 40px;
+    }
+
+    .mentorship-slider-arrow--prev {
+        left: 10px;
+    }
+
+    .mentorship-slider-arrow--next {
+        right: 10px;
+    }
+
+    .mentorship-slider-arrow svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    .mentorship-slider-dots {
+        bottom: 15px;
+        padding: 8px;
+        gap: 10px;
+    }
+
+    .mentorship-dot {
+        width: 10px;
+        height: 10px;
+    }
+
+    .mentorship-dot.active {
+        width: 28px;
+    }
+
+    .college-consulting-section {
+        margin-top: 2rem;
+        padding: 2rem 0;
+        border-radius: 12px;
+    }
+
+    .college-consulting-content {
+        padding: 0 1.5rem;
+    }
+
+    .college-consulting-title {
+        font-size: 1.8rem;
+        margin-bottom: 1rem;
+    }
+
+    .college-consulting-description {
+        font-size: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .college-consulting-cta {
+        padding: 14px 30px;
+        font-size: 0.95rem;
     }
 }

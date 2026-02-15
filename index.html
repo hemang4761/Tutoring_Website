@@ -97,47 +97,61 @@
               </div>
             </article>
 
-            <article class="offer-block">
-              <div class="offer-block-img-wrap">
-                <img
-                  src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=600&auto=format&fit=crop"
-                  alt=""
-                  width="600"
-                  height="400"
-                />
-              </div>
-              <div class="offer-block-content">
-                <h3 class="offer-block-title">College Consulting</h3>
-                <p>
-                  We know what it takes to get into
-                  <strong>top colleges</strong>—and we can help you understand
-                  the whole process and answer any questions about applying.
-                </p>
-              </div>
-            </article>
           </div>
 
           <!-- Specialized Mentorship Slider -->
           <div class="mentorship-slider-section">
             <h3 class="mentorship-slider-title">Specialized Mentorship</h3>
             <div class="mentorship-slider-container">
-              <div class="mentorship-slider-track">
-                <div class="mentorship-slide mentorship-slide--exam">
-                  <div class="mentorship-slide-content">
-                    <h4>BCA/SSAT Entrance Exam Prep</h4>
+              <button class="mentorship-slider-arrow mentorship-slider-arrow--prev" aria-label="Previous slide">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M15 18l-6-6 6-6"/>
+                </svg>
+              </button>
+              <div class="mentorship-slider-wrapper">
+                <div class="mentorship-slider-track">
+                  <div class="mentorship-slide mentorship-slide--exam">
+                    <div class="mentorship-slide-content">
+                      <h4>BCA/SSAT Entrance Exam Prep</h4>
+                    </div>
                   </div>
-                </div>
-                <div class="mentorship-slide mentorship-slide--math">
-                  <div class="mentorship-slide-content">
-                    <h4>Competition Math</h4>
+                  <div class="mentorship-slide mentorship-slide--math">
+                    <div class="mentorship-slide-content">
+                      <h4>Competition Math</h4>
+                    </div>
                   </div>
-                </div>
-                <div class="mentorship-slide mentorship-slide--engineering">
-                  <div class="mentorship-slide-content">
-                    <h4>Specialized Engineering Education</h4>
+                  <div class="mentorship-slide mentorship-slide--engineering">
+                    <div class="mentorship-slide-content">
+                      <h4>Specialized Engineering Education</h4>
+                    </div>
                   </div>
                 </div>
               </div>
+              <button class="mentorship-slider-arrow mentorship-slider-arrow--next" aria-label="Next slide">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M9 18l6-6-6-6"/>
+                </svg>
+              </button>
+              <div class="mentorship-slider-dots">
+                <button class="mentorship-dot active" aria-label="Go to slide 1" data-slide="0"></button>
+                <button class="mentorship-dot" aria-label="Go to slide 2" data-slide="1"></button>
+                <button class="mentorship-dot" aria-label="Go to slide 3" data-slide="2"></button>
+              </div>
+            </div>
+          </div>
+
+          <!-- College Consulting Section -->
+          <div class="college-consulting-section">
+            <div class="college-consulting-content">
+              <h3 class="college-consulting-title">We Also Offer College Consulting!</h3>
+              <p class="college-consulting-description">
+                We know what it takes to get into
+                <strong>top colleges</strong>—and we can help you understand
+                the whole process and answer any questions about applying.
+              </p>
+              <a href="#first-time-booking" class="college-consulting-cta">
+                Schedule a free 30 minute consultation today!
+              </a>
             </div>
           </div>
         </div>
@@ -532,7 +546,7 @@
           </div>
 
           <!-- Google Form Booking Section -->
-          <div class="booking-form-section">
+          <div id="first-time-booking" class="booking-form-section">
             <h3>First Time Booking?</h3>
             <p>
               Please fill out the form below to confirm your details and set up
@@ -621,6 +635,81 @@
         }
         searchEl.addEventListener("input", filter);
         searchEl.addEventListener("search", filter);
+      })();
+
+      // Specialized Mentorship Slider
+      (function() {
+        var track = document.querySelector('.mentorship-slider-track');
+        var slides = document.querySelectorAll('.mentorship-slide');
+        var dots = document.querySelectorAll('.mentorship-dot');
+        var prevBtn = document.querySelector('.mentorship-slider-arrow--prev');
+        var nextBtn = document.querySelector('.mentorship-slider-arrow--next');
+        
+        if (!track || slides.length === 0) return;
+        
+        var currentSlide = 0;
+        var totalSlides = slides.length;
+        
+        function updateSlider() {
+          var translateX = -currentSlide * 100;
+          track.style.transform = 'translateX(' + translateX + '%)';
+          
+          // Update dots
+          dots.forEach(function(dot, index) {
+            if (index === currentSlide) {
+              dot.classList.add('active');
+            } else {
+              dot.classList.remove('active');
+            }
+          });
+        }
+        
+        function nextSlide() {
+          currentSlide = (currentSlide + 1) % totalSlides;
+          updateSlider();
+        }
+        
+        function prevSlide() {
+          currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
+          updateSlider();
+        }
+        
+        function goToSlide(index) {
+          currentSlide = index;
+          updateSlider();
+        }
+        
+        // Event listeners
+        if (nextBtn) {
+          nextBtn.addEventListener('click', nextSlide);
+        }
+        
+        if (prevBtn) {
+          prevBtn.addEventListener('click', prevSlide);
+        }
+        
+        dots.forEach(function(dot, index) {
+          dot.addEventListener('click', function() {
+            goToSlide(index);
+          });
+        });
+        
+        // Initialize
+        updateSlider();
+        
+        // Auto-play (optional - can be removed if you don't want auto-sliding)
+        var autoPlayInterval = setInterval(nextSlide, 5000);
+        
+        // Pause on hover
+        var container = document.querySelector('.mentorship-slider-container');
+        if (container) {
+          container.addEventListener('mouseenter', function() {
+            clearInterval(autoPlayInterval);
+          });
+          container.addEventListener('mouseleave', function() {
+            autoPlayInterval = setInterval(nextSlide, 5000);
+          });
+        }
       })();
     </script>
   </body>
