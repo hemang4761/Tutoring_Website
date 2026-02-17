@@ -909,53 +909,150 @@ nav a:hover {
     margin-bottom: 15px;
 }
 
-/* Scheduling Section - Iframe & Form */
+/* Course ticker between Academic Tutoring and Test Prep */
+.course-ticker {
+    margin: var(--spacing-block) 0;
+    padding: 10px 0;
+    background: var(--bg-white);
+    overflow: hidden;
+}
+
+.course-ticker-row {
+    overflow: hidden;
+    margin-bottom: 4px;
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, black 12%, black 88%, transparent 100%);
+    mask-image: linear-gradient(to right, transparent 0%, black 12%, black 88%, transparent 100%);
+}
+
+.course-ticker-row:last-child {
+    margin-bottom: 0;
+}
+
+.course-ticker-track {
+    display: flex;
+    flex-wrap: nowrap;
+    width: max-content;
+    gap: 1.5rem;
+    padding: 0 0.5rem;
+    white-space: nowrap;
+}
+
+.course-ticker-track span {
+    font-family: var(--font-heading);
+    font-size: 0.85rem;
+    font-weight: 400;
+    color: #6b7280;
+    flex-shrink: 0;
+}
+
+.course-ticker-track span::after {
+    content: '\00b7';
+    margin-left: 1.5rem;
+    color: #bbb;
+    font-weight: 400;
+}
+
+.course-ticker-track--1 {
+    animation: course-ticker-scroll 45s linear infinite;
+}
+
+.course-ticker-track--2 {
+    animation: course-ticker-scroll 50s linear infinite;
+    animation-direction: reverse;
+}
+
+.course-ticker-track--3 {
+    animation: course-ticker-scroll 42s linear infinite;
+}
+
+@keyframes course-ticker-scroll {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
+
+/* Scheduling Section */
 #scheduling {
     padding: 80px 0;
     background-color: var(--bg-white);
-    text-align: center;
 }
 
 .schedule-intro {
     max-width: 700px;
-    margin: 0 auto 40px;
-}
-
-/* Replaces the iframe wrapper style */
-.scheduler-action {
-    margin-bottom: 60px;
-    padding: 30px;
-    background: #fff;
-    border-radius: 8px;
-    border: 1px solid #eee;
-    display: inline-block;
-    width: 100%;
-    max-width: 600px;
-}
-
-.scheduler-note {
-    margin-bottom: 20px;
-    font-size: 1.1rem;
+    margin: 0 auto 2rem;
     color: #555;
 }
 
-/* Google Form Section */
-.booking-form-section {
-    max-width: 800px;
-    margin: 0 auto;
+.schedule-intro--lead {
     text-align: center;
-    padding-top: 40px;
-    border-top: 1px solid #ddd;
+    font-size: 1.1rem;
 }
 
-.booking-form-section h3 {
-    font-size: 2rem;
-    margin-bottom: 10px;
+.schedule-option {
+    max-width: 720px;
+    margin: 0 auto 3rem;
+    text-align: left;
+    padding: var(--spacing-block);
+    background: #fff;
+    border-radius: 12px;
+    border: 1px solid #e8e8e8;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
 }
 
-.booking-form-section p {
-    margin-bottom: 30px;
-    color: #666;
+.schedule-option:last-child {
+    margin-bottom: 0;
+}
+
+.schedule-option--new {
+    border-left: 4px solid var(--accent-gold);
+}
+
+.schedule-option--returning {
+    border-left: 4px solid var(--primary-navy);
+}
+
+.schedule-option-header {
+    margin-bottom: 0.75rem;
+}
+
+.schedule-option-badge {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--primary-navy);
+    background: rgba(255, 204, 0, 0.2);
+    padding: 4px 10px;
+    border-radius: 4px;
+    margin-bottom: 0.5rem;
+}
+
+.schedule-option-badge--returning {
+    background: rgba(26, 44, 78, 0.1);
+    color: var(--primary-navy);
+}
+
+.schedule-option-title {
+    font-size: 1.35rem;
+    color: var(--primary-navy);
+    margin: 0 0 0.5rem;
+}
+
+.schedule-option-desc {
+    font-size: 0.98rem;
+    color: #555;
+    line-height: 1.6;
+    margin: 0 0 1.5rem;
+}
+
+.schedule-option-desc .schedule-phone {
+    color: var(--primary-navy);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.schedule-option-desc .schedule-phone:hover {
+    text-decoration: underline;
 }
 
 .form-wrapper {
@@ -965,12 +1062,18 @@ nav a:hover {
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
 }
 
+.form-wrapper--homely {
+    background: #fafafa;
+    border: 1px solid #eee;
+    border-radius: 10px;
+    padding: 24px;
+}
+
 .form-wrapper iframe {
     width: 100%;
     max-width: 640px;
     border: none;
     min-height: 800px;
-    /* Ensure enough height for the form */
 }
 
 /* Footer */
