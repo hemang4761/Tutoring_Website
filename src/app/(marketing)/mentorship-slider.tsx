@@ -2,34 +2,22 @@
 
 import { useEffect, useState } from "react";
 
-const SLIDES = [
-  {
-    cls: "mentorship-slide--exam",
-    title: "BCA Entrance Exam Prep",
-    body: "Expert preparation for Bergen County Academies / Bergen Tech entrance exams with proven strategies and comprehensive practice.",
-  },
-  {
-    cls: "mentorship-slide--math",
-    title: "Competition Math",
-    body: "Advanced problem-solving techniques and competition strategies for AMC, AIME, and other prestigious math competitions.",
-  },
-  {
-    cls: "mentorship-slide--engineering",
-    title: "Engineering Education",
-    body: "Hands-on engineering mentorship covering advanced concepts, projects, and real-world applications beyond standard curriculum.",
-  },
-];
-
-export function MentorshipSlider() {
+export function MentorshipSlider({
+  slides,
+}: {
+  slides: { title: string; body: string; theme: string }[];
+}) {
   const [current, setCurrent] = useState(0);
   const [paused, setPaused] = useState(false);
-  const total = SLIDES.length;
+  const total = slides.length;
 
   useEffect(() => {
-    if (paused) return;
+    if (paused || total < 2) return;
     const id = setInterval(() => setCurrent((c) => (c + 1) % total), 5000);
     return () => clearInterval(id);
   }, [paused, total]);
+
+  if (!total) return null;
 
   return (
     <div className="mentorship-slider-section">
@@ -50,8 +38,8 @@ export function MentorshipSlider() {
         </button>
         <div className="mentorship-slider-wrapper">
           <div className="mentorship-slider-track" style={{ transform: `translateX(${-current * 100}%)` }}>
-            {SLIDES.map((s) => (
-              <div key={s.title} className={`mentorship-slide ${s.cls}`}>
+            {slides.map((s, i) => (
+              <div key={`${s.title}-${i}`} className={`mentorship-slide mentorship-slide--${s.theme}`}>
                 <div className="mentorship-slide-content">
                   <h4>{s.title}</h4>
                   <p className="mentorship-slide-description">{s.body}</p>
@@ -70,7 +58,7 @@ export function MentorshipSlider() {
           </svg>
         </button>
         <div className="mentorship-slider-dots">
-          {SLIDES.map((s, i) => (
+          {slides.map((s, i) => (
             <button
               key={s.title}
               className={`mentorship-dot${i === current ? " active" : ""}`}

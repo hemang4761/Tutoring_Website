@@ -1,7 +1,7 @@
 import "server-only";
 import type { Types } from "mongoose";
 import { CLAIMABLE_STATUSES } from "@/lib/constants";
-import { AdminRequest, Channel, ClaimRequest, Lead } from "@/models";
+import { AdminRequest, Assignment, Channel, ClaimRequest, Lead } from "@/models";
 import type { CurrentUser } from "@/lib/session";
 
 export type NavBadges = Partial<Record<string, number>>;
@@ -23,13 +23,14 @@ export async function unreadChannelCount(userId: Types.ObjectId) {
 
 export async function getNavBadges(user: CurrentUser): Promise<NavBadges> {
   if (user.role === "admin") {
-    const [claims, requests, newLeads, chat] = await Promise.all([
+    const [claims, requests, newLeads, chat, fees] = await Promise.all([
       ClaimRequest.countDocuments({ status: "pending" }),
       AdminRequest.countDocuments({ status: { $in: ["open", "in_progress"] } }),
       Lead.countDocuments({ status: "new" }),
       unreadChannelCount(user._id),
+      Assignment.countDocuments({ "fee.status": "due" }),
     ]);
-    return { claims, requests, leads: newLeads, chat };
+    return { dashboard: claims + requests + newLeads + fees, chat };
   }
   if (user.role === "tutor") {
     const [open, chat, requests] = await Promise.all([
@@ -37,7 +38,7 @@ export async function getNavBadges(user: CurrentUser): Promise<NavBadges> {
       unreadChannelCount(user._id),
       AdminRequest.countDocuments({ requester: user._id, status: { $in: ["open", "in_progress"] } }),
     ]);
-    return { "claim-board": open, chat, requests };
+    return { dashboard: open, chat, requests };
   }
   return {};
 }

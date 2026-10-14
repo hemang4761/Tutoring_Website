@@ -5,22 +5,43 @@ import { connectDB, plain } from "@/lib/db";
 import { getSettings } from "@/lib/settings";
 import { getTemplate } from "@/actions/onboarding";
 import { User } from "@/models";
+import Link from "next/link";
+import { DEFAULT_TEMPLATES } from "@/lib/constants";
 import { SettingsForms } from "./settings-forms";
+import { TemplatesEditor } from "./templates-editor";
+import { DataControls } from "./data-controls";
+import { AccountForm } from "@/components/account-form";
+import { demoDataCounts } from "@/actions/data";
 
 export const metadata = { title: "Settings" };
 
 export default async function SettingsPage() {
-  await requireAdmin();
+  const me = await requireAdmin();
   await connectDB();
-  const [settings, tutorTpl, familyTpl, admins] = await Promise.all([
+  const [settings, tutorTpl, familyTpl, admins, demo] = await Promise.all([
     getSettings(),
     getTemplate("tutor"),
     getTemplate("family"),
     User.find({ role: "admin" }).select("name email status").lean(),
+    demoDataCounts(),
   ]);
   return (
     <>
-      <PageHeader title="Settings" description="Rates, notifications, onboarding checklists, and admin team." />
+      <PageHeader title="Settings" />
+      <div className="mb-6 space-y-6">
+        <AccountForm name={me.name} email={me.email} />
+        <TemplatesEditor
+          initial={
+            settings.templates?.length
+              ? settings.templates.map((t) => ({ label: t.label ?? "", body: t.body ?? "" }))
+              : DEFAULT_TEMPLATES.map((t) => ({ ...t }))
+          }
+        />
+        <DataControls demo={demo} />
+        <Panel title="Website" actions={<Link href="/admin/website" className="text-sm font-medium hover:underline">Edit website →</Link>}>
+          <p className="text-sm text-muted-foreground">Homepage text, pricing, courses and the tutors shown on the site.</p>
+        </Panel>
+      </div>
       <SettingsForms
         settings={plain({
           orgName: settings.orgName,

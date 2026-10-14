@@ -1,5 +1,9 @@
 import type { Metadata } from "next";
+import { Merriweather, Open_Sans } from "next/font/google";
 import "./marketing.css";
+
+const merriweather = Merriweather({ variable: "--font-merriweather", weight: ["400", "700"], subsets: ["latin"], display: "swap" });
+const openSans = Open_Sans({ variable: "--font-open-sans", weight: ["400", "600"], subsets: ["latin"], display: "swap" });
 
 export const metadata: Metadata = {
   title: "BCLearns",
@@ -9,16 +13,7 @@ export const metadata: Metadata = {
 
 export default function MarketingRootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        {/* eslint-disable-next-line @next/next/no-page-custom-font */}
-        <link
-          href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Open+Sans:wght@400;600&display=swap"
-          rel="stylesheet"
-        />
-      </head>
+    <html lang="en" className={`${merriweather.variable} ${openSans.variable}`}>
       <body>{children}</body>
     </html>
   );

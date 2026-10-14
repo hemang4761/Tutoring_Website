@@ -3,8 +3,9 @@ import type { CurrentUser } from "@/lib/session";
 import { NAV } from "./nav-config";
 import { AppSidebar } from "./sidebar";
 
-export async function AppShell({ user, children }: { user: CurrentUser; children: React.ReactNode }) {
-  const badges = await getNavBadges(user);
+export function AppShell({ user, children }: { user: CurrentUser; children: React.ReactNode }) {
+  // not awaited: the page renders while badge counts stream into the sidebar
+  const badges = getNavBadges(user).catch(() => ({}));
   return (
     <div className="min-h-svh bg-background">
       <AppSidebar

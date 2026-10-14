@@ -1,6 +1,9 @@
 import type { NextAuthConfig } from "next-auth";
 import type { Role } from "@/lib/constants";
 
+// set to true only for local previews without signing in
+export const AUTH_DISABLED = false;
+
 export function homeFor(role: Role | undefined) {
   if (role === "admin") return "/admin";
   if (role === "tutor") return "/tutor";
@@ -40,6 +43,7 @@ export const authConfig = {
     },
     authorized({ auth, request }) {
       const { pathname } = request.nextUrl;
+      if (AUTH_DISABLED && (pathname === "/admin" || pathname.startsWith("/admin/"))) return true;
       const role = auth?.user?.role;
 
       if (AUTH_PAGES.includes(pathname) && role) {

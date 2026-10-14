@@ -12,7 +12,7 @@ export default async function PortalAccountPage() {
         <p><span className="text-muted-foreground">Name:</span> {user.name}</p>
         <p><span className="text-muted-foreground">Email:</span> {user.email}</p>
         <p><span className="text-muted-foreground">Phone:</span> {user.phone || "—"}</p>
-        <p className="mt-4 text-muted-foreground">Need a password reset? Use “Forgot password” on the login page, or email contact.bclearns@gmail.com.</p>
+        <p className="mt-4 text-muted-foreground">Need a password reset? Use “Forgot password” on the login page, or email hello@bclearns.com.</p>
       </div>
     </>
   );

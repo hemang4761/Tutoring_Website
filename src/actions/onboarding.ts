@@ -6,7 +6,7 @@ import { logActivity } from "@/lib/activity";
 import { adminEmails, sendEmail } from "@/lib/email";
 import { DEFAULT_FAMILY_TEMPLATE, DEFAULT_TUTOR_TEMPLATE } from "@/lib/onboarding-defaults";
 import { ActionError, action, requireAdmin, requireUser } from "@/lib/session";
-import { Lead, OnboardingTemplate, TutorProfile, User } from "@/models";
+import { OnboardingTemplate, TutorProfile, User } from "@/models";
 
 export async function getTemplate(audience: "tutor" | "family") {
   await connectDB();
@@ -77,9 +77,6 @@ export async function completeOnboarding() {
     );
     if (user.role === "tutor") {
       await TutorProfile.updateOne({ user: user._id }, { $set: { status: "active" } });
-    }
-    if (user.role === "family" && user.lead) {
-      await Lead.updateOne({ _id: user.lead, status: { $in: ["assigned", "onboarding"] } }, { $set: { status: "active", activeAt: new Date() } });
     }
     await logActivity({
       actor: user._id,

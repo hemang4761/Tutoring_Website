@@ -14,6 +14,20 @@ const assignmentSchema = new Schema(
     startDate: { type: Date, default: Date.now },
     endDate: Date,
     notes: String,
+    // bclearns keeps the first held session's amount as its fee for the match
+    fee: {
+      type: new Schema(
+        {
+          amount: { type: Number, default: 0 },
+          status: { type: String, enum: ["pending", "due", "paid", "waived"], default: "pending" },
+          session: { type: Schema.Types.ObjectId, ref: "Session" },
+          dueAt: Date,
+          paidAt: Date,
+        },
+        { _id: false },
+      ),
+      default: () => ({ status: "pending" }),
+    },
     createdBy: { type: Schema.Types.ObjectId, ref: "User" },
   },
   { timestamps: true },

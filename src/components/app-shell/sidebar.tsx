@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, use, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
 import {
   BarChart3,
   CalendarDays,
+  Globe,
   GraduationCap,
   Hand,
   Home,
@@ -48,6 +49,7 @@ const ICONS: Record<string, LucideIcon> = {
   hand: Hand,
   "life-buoy": LifeBuoy,
   messages: MessagesSquare,
+  globe: Globe,
   "graduation-cap": GraduationCap,
   link: Link2,
   calendar: CalendarDays,
@@ -61,13 +63,23 @@ const ICONS: Record<string, LucideIcon> = {
 
 export type ShellUser = { name: string; email: string; role: string };
 
+function Badge({ badges, id }: { badges: Promise<Partial<Record<string, number>>>; id: string }) {
+  const badge = use(badges)[id];
+  if (!badge) return null;
+  return (
+    <span className="min-w-5 rounded-full bg-sidebar-primary px-1.5 text-center text-[0.68rem] leading-5 font-bold text-sidebar-primary-foreground">
+      {badge > 99 ? "99+" : badge}
+    </span>
+  );
+}
+
 function NavLinks({
   sections,
   badges,
   onNavigate,
 }: {
   sections: NavSection[];
-  badges: Partial<Record<string, number>>;
+  badges: Promise<Partial<Record<string, number>>>;
   onNavigate?: () => void;
 }) {
   const pathname = usePathname();
@@ -83,7 +95,6 @@ function NavLinks({
           {section.items.map((item) => {
             const Icon = ICONS[item.icon] ?? LayoutDashboard;
             const active = item.exact ? pathname === item.href : pathname.startsWith(item.href);
-            const badge = badges[item.key];
             return (
               <Link
                 key={item.key}
@@ -98,11 +109,9 @@ function NavLinks({
               >
                 <Icon className={cn("size-4", active ? "text-sidebar-primary" : "opacity-80")} />
                 <span className="flex-1">{item.label}</span>
-                {badge ? (
-                  <span className="min-w-5 rounded-full bg-sidebar-primary px-1.5 text-center text-[0.68rem] leading-5 font-bold text-sidebar-primary-foreground">
-                    {badge > 99 ? "99+" : badge}
-                  </span>
-                ) : null}
+                <Suspense fallback={null}>
+                  <Badge badges={badges} id={item.key} />
+                </Suspense>
               </Link>
             );
           })}
@@ -140,6 +149,7 @@ function UserMenu({ user }: { user: ShellUser }) {
           {resolvedTheme === "dark" ? "Light mode" : "Dark mode"}
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
+          {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- the public site is a separate root layout */}
           <a href="/">
             <Home /> Public website
           </a>
@@ -161,7 +171,7 @@ function SidebarBody({
 }: {
   user: ShellUser;
   sections: NavSection[];
-  badges: Partial<Record<string, number>>;
+  badges: Promise<Partial<Record<string, number>>>;
   onNavigate?: () => void;
 }) {
   const home = user.role === "admin" ? "/admin" : user.role === "tutor" ? "/tutor" : "/portal";
@@ -178,7 +188,7 @@ function SidebarBody({
   );
 }
 
-export function AppSidebar(props: { user: ShellUser; sections: NavSection[]; badges: Partial<Record<string, number>> }) {
+export function AppSidebar(props: { user: ShellUser; sections: NavSection[]; badges: Promise<Partial<Record<string, number>>> }) {
   const [open, setOpen] = useState(false);
   return (
     <>

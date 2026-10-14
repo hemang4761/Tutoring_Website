@@ -47,3 +47,6 @@ next-env.d.ts
 
 # claude local settings
 .claude/
+
+# local logins written by npm run seed
+*.local.md

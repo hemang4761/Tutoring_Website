@@ -9,11 +9,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { updateTutorProfile } from "@/actions/tutors";
 import { toastResult } from "@/lib/toast";
+import { AccountForm } from "@/components/account-form";
 
 export default function TutorProfilePage() {
   const [data, setData] = useState<{
     userId: string;
     name: string;
+    email: string;
     phone: string;
     headline: string;
     bio: string;
@@ -55,6 +57,9 @@ export default function TutorProfilePage() {
           Save profile
         </Button>
       </form>
+      <div className="mt-6 max-w-xl">
+        <AccountForm name={data.name} email={data.email} />
+      </div>
     </>
   );
 }

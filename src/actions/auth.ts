@@ -1,6 +1,7 @@
 "use server";
 
 import { AuthError } from "next-auth";
+import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { hashPassword, signIn, signOut } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
@@ -9,6 +10,7 @@ import { rateLimit } from "@/lib/rate-limit";
 import { appUrl } from "@/lib/settings";
 import { createToken, findValidToken } from "@/lib/tokens";
 import { logActivity } from "@/lib/activity";
+import { ActionError, action, requireUser } from "@/lib/session";
 import { User } from "@/models";
 
 export type FormState = { error?: string; success?: string } | undefined;
@@ -94,4 +96,39 @@ export async function forgotPasswordAction(_prev: FormState, formData: FormData)
     footnote: "If you didn't request this, you can ignore this email.",
   });
   return done;
+}
+
+const accountSchema = z.object({
+  name: z.string().trim().min(2, "Add your name."),
+  email: z.string().trim().email("That email doesn't look right."),
+  currentPassword: z.string().min(1, "Enter your current password to save changes."),
+  newPassword: z.string().optional().default(""),
+});
+
+// lets any signed-in person change their own name, email or password
+export async function updateMyAccount(input: z.input<typeof accountSchema>) {
+  return action(async () => {
+    const me = await requireUser(undefined, { allowIncompleteOnboarding: true });
+    const parsed = accountSchema.safeParse(input);
+    if (!parsed.success) throw new ActionError(parsed.error.issues[0].message);
+    const data = parsed.data;
+    await connectDB();
+    const user = await User.findById(me._id).select("+passwordHash");
+    if (!user?.passwordHash || !(await bcrypt.compare(data.currentPassword, user.passwordHash))) {
+      throw new ActionError("Your current password isn't right.");
+    }
+    if (data.newPassword) {
+      const pw = passwordSchema.safeParse(data.newPassword);
+      if (!pw.success) throw new ActionError(pw.error.issues[0].message);
+      user.passwordHash = await hashPassword(data.newPassword);
+    }
+    const email = data.email.toLowerCase();
+    if (email !== user.email) {
+      if (await User.exists({ email, _id: { $ne: user._id } })) throw new ActionError("That email is already used by another account.");
+      user.email = email;
+    }
+    user.name = data.name;
+    await user.save();
+    await logActivity({ actor: user._id, action: "user.account_updated", entityType: "user", entityId: user._id, summary: `${user.name} updated their account` });
+  }, "Account saved");
 }

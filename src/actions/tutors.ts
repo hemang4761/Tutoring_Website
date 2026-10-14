@@ -87,6 +87,8 @@ export async function resendInvite(userId: string) {
 }
 
 const profileSchema = z.object({
+  email: z.string().trim().email().optional(),
+  name: z.string().trim().min(2).optional(),
   headline: z.string().trim().max(140).optional().default(""),
   bio: z.string().trim().max(2000).optional().default(""),
   phone: z.string().trim().max(30).optional().default(""),
@@ -109,6 +111,12 @@ export async function updateTutorProfile(tutorUserId: string, input: z.input<typ
     const user = await User.findById(tutorUserId);
     if (!user || user.role !== "tutor") throw new ActionError("Tutor not found.");
     if (data.phone !== undefined) user.phone = data.phone;
+    if (actor.role === "admin" && data.name) user.name = data.name;
+    if (actor.role === "admin" && data.email && data.email.toLowerCase() !== user.email) {
+      const email = data.email.toLowerCase();
+      if (await User.exists({ email, _id: { $ne: user._id } })) throw new ActionError("That email is already used by another account.");
+      user.email = email;
+    }
     await user.save();
     const profile = await TutorProfile.findOneAndUpdate(
       { user: user._id },
@@ -178,4 +186,40 @@ export async function inviteAdmin(input: z.input<typeof adminSchema>) {
     });
     revalidatePath("/admin/settings");
   }, "Admin invite sent");
+}
+
+const addTutorSchema = z.object({
+  name: z.string().trim().min(2, "Add a name"),
+  email: z.string().trim().email("Add a valid email"),
+  phone: z.string().trim().max(30).optional().default(""),
+  subjects: z.array(z.string()).optional().default([]),
+  invite: z.boolean().optional().default(true),
+});
+
+// adds a tutor without an application; they get an invite to set a password
+export async function addTutor(input: z.input<typeof addTutorSchema>) {
+  return action(async () => {
+    const admin = await requireAdmin();
+    const parsed = addTutorSchema.safeParse(input);
+    if (!parsed.success) throw new ActionError(parsed.error.issues[0].message);
+    const data = parsed.data;
+    await connectDB();
+    const email = data.email.toLowerCase();
+    if (await User.exists({ email })) throw new ActionError("That email already has an account.");
+    const user = await User.create({
+      name: data.name,
+      email,
+      phone: data.phone,
+      role: "tutor",
+      status: "invited",
+      onboarding: { status: "complete", completedAt: new Date() },
+    });
+    const profile = await TutorProfile.create({ user: user._id, subjects: data.subjects, status: "active" });
+    user.tutorProfile = profile._id;
+    await user.save();
+    if (data.invite) await sendInvite(user);
+    await logActivity({ actor: admin._id, action: "tutor.added", entityType: "user", entityId: user._id, summary: `Added ${data.name} as a tutor` });
+    refresh();
+    return user._id.toString();
+  }, "Tutor added");
 }

@@ -31,14 +31,6 @@ npm run dev
 - Tutor apply: `/apply`
 - Login: `/login`
 
-## Deploy (Render)
+## Deploy
 
-Create a MongoDB Atlas cluster (M0 is fine; enable replica set, which Atlas does by default). Create a Resend API key for email. Then create a Render Blueprint from `render.yaml`, or a Web Service with:
-
-- Build: `npm ci && npm run build`
-- Start: `npm start`
-- Env: `MONGODB_URI`, `AUTH_SECRET`, `APP_URL`, `RESEND_API_KEY`, `CRON_SECRET`
-
-After the first deploy, run `npm run seed` once against production (or use a one-off Render shell) so the first admin and onboarding templates exist.
-
-Hourly cron hits `/api/cron/reminders`. Monday cron hits `/api/cron/digest`.
+See [docs/go-live.md](docs/go-live.md) for the full walkthrough (Atlas, Resend, Render, moving bclearns.com). `render.yaml` is the Render blueprint and `npm run seed:prod` creates the real accounts in the production database.

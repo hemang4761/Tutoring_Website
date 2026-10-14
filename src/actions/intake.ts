@@ -7,107 +7,125 @@ import { logActivity } from "@/lib/activity";
 import { createLeadChannel, postSystemMessage } from "@/lib/channels";
 import { rateLimit } from "@/lib/rate-limit";
 import { appUrl, getSettings } from "@/lib/settings";
-import { DAYS, FORMATS, TIME_BLOCKS } from "@/lib/constants";
-import { applicationSchema, leadSchema, type ApplicationInput, type LeadInput } from "@/lib/validation";
+import { applicationSchema, leadSchema, type ApplicationInput, type LeadData } from "@/lib/validation";
 import { Lead, TutorApplication, User } from "@/models";
 
 type Result = { ok: true } | { ok: false; error: string };
 
-export async function submitLead(input: LeadInput): Promise<Result> {
+export async function submitLead(input: LeadData): Promise<Result> {
   const parsed = leadSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Please check the form." };
   const data = parsed.data;
-  // bots fill the hidden field; pretend success
   if (data.website) return { ok: true };
   if (!(await rateLimit("lead", 5, 60 * 60_000))) {
-    return { ok: false, error: "We've received several submissions from you. Please text us at (201) 951-7942." };
+    return { ok: false, error: "We've received several submissions from you. Please email us at hello@bclearns.com." };
   }
 
+  const wantsTutoring = data.service === "tutoring";
+  const wantsCollege = data.service === "college" || data.alsoConsulting === "yes";
+  const courseList = data.courses
+    .split(/[,;\n]+/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const subjects = [
+    ...new Set([
+      ...(wantsTutoring && data.tutoringRequest ? [data.tutoringRequest] : []),
+      ...courseList,
+      ...(wantsCollege ? ["College Consulting"] : []),
+    ]),
+  ];
+  const services = [
+    ...(wantsTutoring ? [data.tutoringRequest || "Academic Tutoring"] : []),
+    ...(wantsCollege ? ["College Consulting"] : []),
+  ];
+  const respondent = data.respondent === "parent" ? "parent" : "student";
+  const service = data.service === "college" ? "college" : "tutoring";
+  const who = respondent === "parent" ? "Parent/guardian" : "Student";
+
   await connectDB();
-  const subjects = [...new Set(data.students.flatMap((s) => s.subjects))];
   const lead = await Lead.create({
-    parent: data.parent,
-    students: data.students,
+    parent: { name: data.name, email: data.email, phone: data.phone, preferredContact: "email" },
+    students: [{ name: data.name, grade: data.grade, school: "", subjects }],
     subjects,
-    services: data.services,
-    goals: data.goals,
-    format: data.format,
-    location: data.location,
-    availability: data.availability,
-    availabilityNotes: data.availabilityNotes,
-    sessionsPerWeek: data.sessionsPerWeek,
-    startTiming: data.startTiming,
-    source: data.source,
-    referral: data.referral,
-    message: data.message,
+    services,
+    goals: data.consultingGoals,
+    sessionsPerWeek: data.hoursPerWeek,
+    message: data.comments,
+    source: "Website",
     status: "new",
+    intake: {
+      respondent,
+      service,
+      tutoringRequest: data.tutoringRequest,
+      courses: data.courses,
+      hoursPerWeek: data.hoursPerWeek,
+      comments: data.comments,
+      alsoConsulting: data.alsoConsulting === "yes",
+      careerInterests: data.careerInterests,
+      academics: data.academics,
+      extracurriculars: data.extracurriculars,
+      collegeList: data.collegeList,
+      consultingGoals: data.consultingGoals,
+    },
   });
   const channel = await createLeadChannel(lead);
   lead.channel = channel._id;
   await lead.save();
 
-  const studentLine = data.students.map((s) => `${s.name} (grade ${s.grade})`).join(", ");
-  await postSystemMessage(channel._id, `New lead from the onboarding form: ${studentLine} · ${subjects.join(", ")}`);
-  await logActivity({ action: "lead.created", entityType: "lead", entityId: lead._id, summary: "Lead submitted via onboarding form" });
+  const studentLine = `${data.name} (grade ${data.grade})`;
+  await postSystemMessage(channel._id, `New request: ${who} ${studentLine} · ${services.join(", ")}`);
+  await logActivity({ action: "lead.created", entityType: "lead", entityId: lead._id, summary: "New request from the website" });
 
-  const format = FORMATS.find((f) => f.key === data.format)?.label ?? data.format;
-  const when = data.availability.length
-    ? data.availability.map((a) => `${DAYS[a.day]} ${TIME_BLOCKS.find((b) => b.key === a.block)?.label.toLowerCase()}`).join(", ")
-    : data.availabilityNotes || "Not specified";
-  const grades = [...new Set(data.students.map((s) => s.grade))].join(", ");
+  const details: Array<[string, string]> = [
+    ["Contact", `${data.name} (${data.email}, ${data.phone})`],
+    ["Submitted as", who],
+    ["Grade", data.grade],
+    ["Looking for", services.join(", ") || "Not specified"],
+  ];
+  if (wantsTutoring) {
+    details.push(["Tutoring request", data.tutoringRequest || "—"]);
+    details.push(["Courses", data.courses || "—"]);
+    details.push(["Hours per week", data.hoursPerWeek || "—"]);
+  }
+  if (wantsCollege) {
+    if (data.careerInterests) details.push(["Career interests", data.careerInterests]);
+    if (data.academics) details.push(["Academics", data.academics]);
+    if (data.extracurriculars) details.push(["Activities", data.extracurriculars]);
+    if (data.collegeList) details.push(["College list", data.collegeList]);
+    if (data.consultingGoals) details.push(["Consulting goals", data.consultingGoals]);
+  }
+  if (data.comments) details.push(["Comments", data.comments]);
 
   const settings = await getSettings();
   const [admins, tutors] = await Promise.all([
     adminEmails(),
-    settings.notifyTutorsOnNewLead ? activeTutorEmails() : Promise.resolve([] as string[]),
+    wantsTutoring && settings.notifyTutorsOnNewLead ? activeTutorEmails() : Promise.resolve([] as string[]),
   ]);
 
   await Promise.all([
     sendEmail({
       to: admins,
       kind: "lead_new_admin",
-      subject: `New lead: ${data.parent.name} · ${subjects.slice(0, 2).join(", ")}`,
-      heading: "A new family just signed up",
-      preview: `${studentLine} needs help with ${subjects.join(", ")}`,
-      details: [
-        ["Parent", `${data.parent.name} (${data.parent.email}, ${data.parent.phone})`],
-        ["Students", studentLine],
-        ["Subjects", subjects.join(", ")],
-        ["Format", `${format}${data.location ? ` · ${data.location}` : ""}`],
-        ["Availability", when],
-        ["Source", data.source || "Not specified"],
-      ],
-      paragraphs: data.goals ? [`Goals: ${data.goals}`] : [],
-      cta: { label: "Open lead", url: `${appUrl()}/admin/leads/${lead._id}` },
+      subject: `New lead: ${data.name} · ${services.slice(0, 2).join(", ")}`,
+      heading: "A new request just came in",
+      preview: `${who}, grade ${data.grade} · ${services.join(", ")}`,
+      details,
+      cta: { label: "Open in BCLearns", url: `${appUrl()}/admin?client=${lead._id}` },
     }),
     sendEmail({
       to: tutors.filter((t) => !admins.includes(t)),
       kind: "lead_new_tutor",
-      subject: `New student available: ${subjects.slice(0, 2).join(", ")} (grade ${grades})`,
+      subject: `New student available: ${subjects.slice(0, 2).join(", ")} (grade ${data.grade})`,
       heading: "A new student is up for grabs",
-      preview: `Grade ${grades} · ${subjects.join(", ")}`,
-      paragraphs: ["A new family is looking for a tutor. If it's a good fit for you, claim it on the claim board and an admin will review."],
+      preview: `Grade ${data.grade} · ${subjects.join(", ")}`,
+      paragraphs: ["A new family is looking for a tutor. If it's a good fit for you, claim it and the admin will review."],
       details: [
-        ["Grade", grades],
-        ["Subjects", subjects.join(", ")],
-        ["Format", format],
-        ["Availability", when],
+        ["Grade", data.grade],
+        ["Request", data.tutoringRequest || "Academic tutoring"],
+        ["Courses", data.courses || "Not specified"],
+        ["Hours per week", data.hoursPerWeek || "Not specified"],
       ],
-      cta: { label: "View on the claim board", url: `${appUrl()}/tutor/claim-board` },
-    }),
-    sendEmail({
-      to: data.parent.email,
-      kind: "lead_confirmation",
-      subject: "We received your BCLearns request",
-      heading: `Thanks, ${data.parent.name.split(" ")[0]}!`,
-      paragraphs: [
-        "We've received your information and will reach out within 24–48 hours to match your student with a tutor.",
-        "Once you're matched, we'll send you a link to your family portal where you can see your schedule and session notes.",
-      ],
-      details: [
-        ["Students", studentLine],
-        ["Subjects", subjects.join(", ")],
-      ],
+      cta: { label: "See it on BCLearns", url: `${appUrl()}/tutor` },
     }),
   ]);
 

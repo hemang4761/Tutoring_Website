@@ -14,7 +14,6 @@ import { ClaimRequest, Lead, TutorProfile } from "@/models";
 const revalidate = (leadId?: string) => {
   revalidatePath("/admin", "layout");
   revalidatePath("/tutor", "layout");
-  if (leadId) revalidatePath(`/admin/leads/${leadId}`);
 };
 
 export async function claimLead(leadId: string, message?: string) {
@@ -38,7 +37,6 @@ export async function claimLead(leadId: string, message?: string) {
     }
 
     const claim = await ClaimRequest.create({ lead: lead._id, tutor: tutor._id, message: message?.trim() });
-    if (lead.status === "new" || lead.status === "contacted" || lead.status === "open") lead.status = "claimed";
     lead.lastActivityAt = new Date();
     await lead.save();
     await postSystemMessage(lead.channel, `${tutor.name} claimed this lead${message?.trim() ? `: ${message.trim()}` : "."}`);
@@ -61,7 +59,7 @@ export async function claimLead(leadId: string, message?: string) {
         ["Student", lead.students.map((s) => `${s.name} (grade ${s.grade})`).join(", ")],
         ["Subjects", lead.subjects.join(", ")],
       ],
-      cta: { label: "Review claims", url: `${appUrl()}/admin/claims` },
+      cta: { label: "Review on the dashboard", url: `${appUrl()}/admin` },
     });
     revalidate(leadId);
     return claim._id.toString();
@@ -77,19 +75,11 @@ export async function withdrawClaim(claimId: string) {
     if (claim.status !== "pending") throw new ActionError("This claim can't be withdrawn.");
     claim.status = "withdrawn";
     await claim.save();
-    const remaining = await ClaimRequest.countDocuments({ lead: claim.lead, status: "pending" });
-    if (!remaining) {
-      const lead = await Lead.findById(claim.lead);
-      if (lead && lead.status === "claimed") {
-        lead.status = "open";
-        await lead.save();
-      }
-    }
     revalidate(claim.lead.toString());
   }, "Claim withdrawn");
 }
 
-export async function decideClaim(claimId: string, decision: "approved" | "rejected", note?: string) {
+export async function decideClaim(claimId: string, decision: "approved" | "rejected", note?: string, rate?: number) {
   return action(async () => {
     const admin = await requireAdmin();
     await connectDB();
@@ -101,6 +91,7 @@ export async function decideClaim(claimId: string, decision: "approved" | "rejec
         tutorId: claim.tutor,
         actorId: admin._id,
         claimId: claim._id,
+        rate,
       });
     } else {
       claim.status = "rejected";
@@ -108,14 +99,6 @@ export async function decideClaim(claimId: string, decision: "approved" | "rejec
       claim.decidedAt = new Date();
       claim.decisionNote = note;
       await claim.save();
-      const remaining = await ClaimRequest.countDocuments({ lead: claim.lead, status: "pending" });
-      if (!remaining) {
-        const lead = await Lead.findById(claim.lead);
-        if (lead && lead.status === "claimed") {
-          lead.status = "open";
-          await lead.save();
-        }
-      }
       await postSystemMessage(claim.lead && (await Lead.findById(claim.lead))?.channel, `${admin.name} declined a claim.`);
     }
     revalidate(claim.lead.toString());

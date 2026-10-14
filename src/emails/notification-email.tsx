@@ -63,7 +63,7 @@ export function NotificationEmail({ preview, heading, paragraphs = [], details, 
             ) : null}
             <Hr style={{ borderColor: "#eceef3", margin: "28px 0 12px" }} />
             <Text style={{ color: "#8a91a3", fontSize: 12, margin: 0 }}>
-              {footnote ?? "Bergen County Learns · contact.bclearns@gmail.com · (201) 951-7942"}
+              {footnote ?? "Bergen County Learns · hello@bclearns.com"}
             </Text>
           </Section>
         </Container>

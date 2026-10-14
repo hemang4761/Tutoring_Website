@@ -90,7 +90,7 @@ const settingsSchema = new Schema(
   {
     key: { type: String, default: "global", unique: true },
     orgName: { type: String, default: "BCLearns" },
-    replyTo: { type: String, default: "contact.bclearns@gmail.com" },
+    replyTo: { type: String, default: "hello@bclearns.com" },
     notifyTutorsOnNewLead: { type: Boolean, default: true },
     extraNotifyEmails: { type: [String], default: [] },
     rateTiers: {
@@ -98,6 +98,11 @@ const settingsSchema = new Schema(
       default: [],
     },
     remindersEnabled: { type: Boolean, default: true },
+    quietDays: { type: Number, default: 14 },
+    templates: {
+      type: [new Schema({ label: { type: String, trim: true }, body: { type: String, trim: true } }, { _id: true })],
+      default: [],
+    },
     digestEnabled: { type: Boolean, default: true },
   },
   { timestamps: true },
@@ -106,6 +111,55 @@ const settingsSchema = new Schema(
 export type SettingsDoc = InferSchemaType<typeof settingsSchema> & { _id: Types.ObjectId };
 export const Settings: Model<SettingsDoc> =
   (models.Settings as Model<SettingsDoc>) || model<SettingsDoc>("Settings", settingsSchema);
+
+const siteStatSchema = new Schema({ value: String, label: String }, { _id: false });
+const siteTutorSchema = new Schema({ name: String, role: String, bio: String, photo: String }, { _id: false });
+const siteGroupSchema = new Schema({ label: String, courses: { type: [String], default: [] } }, { _id: false });
+const sitePriceSchema = new Schema(
+  {
+    title: String,
+    subtitle: String,
+    price: Number,
+    header: { type: String, enum: ["foundation", "standard", "testprep", "premium"], default: "standard" },
+    featured: { type: Boolean, default: false },
+    features: { type: [String], default: [] },
+  },
+  { _id: false },
+);
+const siteSlideSchema = new Schema(
+  {
+    title: String,
+    body: String,
+    theme: { type: String, enum: ["exam", "math", "engineering"], default: "exam" },
+  },
+  { _id: false },
+);
+
+const siteContentSchema = new Schema(
+  {
+    key: { type: String, default: "global", unique: true },
+    customTutors: { type: Boolean, default: false },
+    stats: { type: [siteStatSchema], default: [] },
+    tutors: { type: [siteTutorSchema], default: [] },
+    ticker: { type: [String], default: [] },
+    catalog: { type: [siteGroupSchema], default: [] },
+    collegeNote: { type: String, default: "" },
+    pricing: { type: [sitePriceSchema], default: [] },
+    mentorship: { type: [siteSlideSchema], default: [] },
+    heroBrand: { type: String, default: "" },
+    heroTitle: { type: String, default: "" },
+    heroSubtitle: { type: String, default: "" },
+    tutoringBlurb: { type: String, default: "" },
+    testPrepBlurb: { type: String, default: "" },
+    aboutBlurb: { type: String, default: "" },
+    catalogSubtitle: { type: String, default: "" },
+  },
+  { timestamps: true },
+);
+
+export type SiteContentDoc = InferSchemaType<typeof siteContentSchema> & { _id: Types.ObjectId };
+export const SiteContent: Model<SiteContentDoc> =
+  (models.SiteContent as Model<SiteContentDoc>) || model<SiteContentDoc>("SiteContent", siteContentSchema);
 
 // invite and password reset tokens (only the hash is stored)
 const tokenSchema = new Schema(

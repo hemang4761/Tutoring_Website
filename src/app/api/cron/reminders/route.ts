@@ -4,7 +4,7 @@ import { connectDB } from "@/lib/db";
 import { sendEmail } from "@/lib/email";
 import { getSettings } from "@/lib/settings";
 import { fmtDateTime } from "@/lib/format";
-import { Lead, Session, User } from "@/models";
+import { Session, User } from "@/models";
 
 export async function GET(req: Request) {
   if (req.headers.get("authorization") !== `Bearer ${process.env.CRON_SECRET}`) {
@@ -24,8 +24,9 @@ export async function GET(req: Request) {
 
   let sent = 0;
   for (const s of sessions) {
-    const [tutor, lead] = await Promise.all([User.findById(s.tutor).lean(), Lead.findById(s.lead).lean()]);
-    const to = [tutor?.email, lead?.parent.email, lead?.familyUser ? (await User.findById(lead.familyUser).select("email").lean())?.email : null].filter(Boolean) as string[];
+    const tutor = await User.findById(s.tutor).lean();
+    // reminders go to the tutor only; families hear from their tutor directly
+    const to = [tutor?.email].filter(Boolean) as string[];
     await sendEmail({
       to,
       kind: "session_reminder",

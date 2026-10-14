@@ -71,7 +71,6 @@ export async function broadcastEmail(input: z.input<typeof broadcastSchema>) {
       heading: data.heading,
       paragraphs: data.body.split(/\n{2,}/).map((p) => p.trim()).filter(Boolean),
     });
-    revalidatePath("/admin/email");
     return emails.length;
   }, "Email sent");
 }
@@ -83,3 +82,15 @@ export async function loadEmailLogs() {
 }
 
 export { adminEmails };
+
+const templatesSchema = z.array(z.object({ label: z.string().trim().min(1).max(60), body: z.string().trim().min(1).max(1000) })).max(30);
+
+export async function saveTemplates(input: z.input<typeof templatesSchema>) {
+  return action(async () => {
+    await requireAdmin();
+    const data = templatesSchema.parse(input);
+    await connectDB();
+    await Settings.findOneAndUpdate({ key: "global" }, { $set: { templates: data } }, { upsert: true });
+    revalidatePath("/admin", "layout");
+  }, "Templates saved");
+}

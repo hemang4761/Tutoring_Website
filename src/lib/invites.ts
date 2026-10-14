@@ -11,7 +11,7 @@ const COPY = {
   },
   tutor: {
     subject: "Welcome to the BCLearns tutor team",
-    body: "Your tutor application was approved! Set your password, then finish a short onboarding checklist to unlock the claim board, your schedule, and the team chat.",
+    body: "You've been added to the BCLearns tutor team. Set your password to see new students as they come in, keep your schedule, and chat with the team.",
   },
   family: {
     subject: "Your BCLearns family portal is ready",

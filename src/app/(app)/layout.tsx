@@ -17,8 +17,8 @@ export const metadata: Metadata = {
 
 export default function AppRootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={`${merriweather.variable} ${openSans.variable} antialiased`}>
+    <html lang="en" suppressHydrationWarning className={`${merriweather.variable} ${openSans.variable}`}>
+      <body className="antialiased">
         <Providers>{children}</Providers>
       </body>
     </html>

@@ -86,6 +86,7 @@ export function ApplicationForm() {
           set up your tutor account.
         </p>
         <Button asChild variant="outline" className="mt-8">
+          {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- the public site is a separate root layout */}
           <a href="/">Back to the website</a>
         </Button>
       </div>

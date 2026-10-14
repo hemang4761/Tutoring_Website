@@ -2,6 +2,8 @@
           npm run seed -- --demo  -> also sample tutors, leads, assignments, sessions */
 import crypto from "crypto";
 import bcrypt from "bcryptjs";
+import fs from "fs";
+import path from "path";
 import mongoose from "mongoose";
 import { addDays, addMinutes, setHours, setMinutes, startOfDay, subDays } from "date-fns";
 import {
@@ -15,6 +17,7 @@ import {
   Settings,
   TutorProfile,
   User,
+  type UserDoc,
   AdminRequest,
   ActivityLog,
 } from "../src/models";
@@ -47,6 +50,7 @@ async function main() {
   let admin = await User.findOne({ email });
   if (!admin) {
     const password = process.env.SEED_ADMIN_PASSWORD || crypto.randomBytes(9).toString("base64url");
+    logins.push(["Admin", email, password]);
     admin = await User.create({
       name: process.env.SEED_ADMIN_NAME || "BCLearns Admin",
       email,
@@ -55,7 +59,7 @@ async function main() {
       passwordHash: await bcrypt.hash(password, 11),
       onboarding: { status: "complete", completedAt: new Date() },
     });
-    console.log(`[seed] created admin ${email} with password: ${password}`);
+    console.log(`[seed] created admin ${email}`);
   } else {
     console.log(`[seed] admin ${email} already exists`);
   }
@@ -76,22 +80,16 @@ async function main() {
     console.log("[seed] created #general");
   }
 
-  if (demo) await seedDemo(admin._id, general._id);
+  const tutors = await ensureTeam();
+  if (demo) await seedDemo(admin._id, general._id, tutors);
+  writeLogins();
 
   await mongoose.disconnect();
   console.log("[seed] done");
 }
 
-const pick = <T,>(arr: readonly T[], i: number) => arr[i % arr.length];
-const rand = (n: number) => Math.floor(Math.random() * n);
-
-async function seedDemo(adminId: mongoose.Types.ObjectId, generalId: mongoose.Types.ObjectId) {
-  if (await Lead.exists({ tags: "demo" })) {
-    console.log("[seed] demo data already present, skipping");
-    return;
-  }
-  const passwordHash = await bcrypt.hash("password123", 11);
-
+// the real tutoring team from the website; idempotent, so running it again keeps existing accounts
+async function ensureTeam() {
   const team = [
     { name: "Hemang Mittal", photo: "/media/hemang.jpeg", headline: "Math, Engineering & Humanities Tutor | College Essay Consultant", subjects: ["AP Calculus BC", "Engineering", "College Consulting & Essays", "AP English Language & Composition"], bio: "Has mastered college-level coursework across engineering, math beyond calculus, and computer science. Experienced in essay consulting, with deep knowledge of admissions and debate experience." },
     { name: "Shlok Shah", photo: "", headline: "Math & Science Tutor | Expert Test Prep Mentor", subjects: ["AP Chemistry", "AP Calculus AB", "SAT", "Precalculus"], bio: "Excels at making challenging math and science concepts intuitive and approachable. Has mastered coursework through multivariable calculus and college-level chemistry and physics." },
@@ -101,9 +99,17 @@ async function seedDemo(adminId: mongoose.Types.ObjectId, generalId: mongoose.Ty
     { name: "Michael Hernandez", photo: "/media/michaelmit.webp", headline: "Expert Engineering & Math Tutor | Expert Test Prep Mentor", subjects: ["Engineering", "AP Calculus AB", "Physics (honors / intro)", "ACT"], bio: "A knowledgeable tutor committed to the craft of engineering, ready to help you with any project or goal to become a future engineer. Also ready to tutor anything across math and physics." },
   ];
 
-  const tutors = [];
+  const tutors: Array<mongoose.HydratedDocument<UserDoc>> = [];
+  const password = process.env.SEED_TUTOR_PASSWORD || crypto.randomBytes(9).toString("base64url");
+  const passwordHash = await bcrypt.hash(password, 11);
   for (const [i, t] of team.entries()) {
-    const email = t.name.split(" ")[0].toLowerCase() + "@demo.bclearns.com";
+    const email = t.name.split(" ")[0].toLowerCase() + "@bclearns.com";
+    const existing = await User.findOne({ email });
+    if (existing) {
+      tutors.push(existing);
+      continue;
+    }
+    logins.push([`Tutor · ${t.name}`, email, password]);
     const user = await User.create({
       name: t.name,
       email,
@@ -131,11 +137,44 @@ async function seedDemo(adminId: mongoose.Types.ObjectId, generalId: mongoose.Ty
     await user.save();
     tutors.push(user);
   }
-  console.log(`[seed] created ${tutors.length} demo tutors (password: password123)`);
+  console.log(`[seed] team ready (${tutors.length} tutors)`);
+  return tutors;
+}
+
+const logins: Array<[string, string, string]> = [];
+
+// passwords only ever land in this gitignored file, never in the repo or the console
+function writeLogins() {
+  if (!logins.length) return;
+  const file = path.join(process.cwd(), "LOGINS.local.md");
+  const lines = [
+    `## Accounts created ${new Date().toLocaleString()}`,
+    "",
+    "| Account | Email | Password |",
+    "|---|---|---|",
+    ...logins.map(([who, email, pw]) => `| ${who} | ${email} | ${pw} |`),
+    "",
+    "Change any of these after you sign in. Tutor emails can be edited in their panel.",
+    "",
+  ];
+  fs.appendFileSync(file, lines.join("\n"));
+  console.log(`[seed] wrote ${logins.length} logins to LOGINS.local.md`);
+}
+
+const pick = <T,>(arr: readonly T[], i: number) => arr[i % arr.length];
+const rand = (n: number) => Math.floor(Math.random() * n);
+
+async function seedDemo(adminId: mongoose.Types.ObjectId, generalId: mongoose.Types.ObjectId, tutors: Array<mongoose.HydratedDocument<UserDoc>>) {
+  if (await Lead.exists({ tags: "demo" })) {
+    console.log("[seed] demo data already present, skipping");
+    return;
+  }
+
+
 
   const parents = ["Patel", "Kim", "Garcia", "Chen", "Rossi", "Nguyen", "Cohen", "Singh", "Park", "Murphy", "Shah", "Lee", "Ahmed", "Lopez", "Kaur", "Wong", "Brown", "Rivera", "Gupta", "Choi", "Davis", "Ali", "Martin", "Russo"];
   const firstNames = ["Aarav", "Mia", "Lucas", "Emma", "Noah", "Ava", "Leo", "Zoe", "Ethan", "Lily", "Ryan", "Sofia"];
-  const statuses: LeadStatus[] = ["new", "new", "contacted", "open", "open", "claimed", "assigned", "onboarding", "active", "active", "active", "active", "paused", "lost"];
+  const statuses: LeadStatus[] = ["new", "new", "contacted", "contacted", "contacted", "matched", "matched", "active", "active", "active", "active", "active", "paused", "lost"];
   const subjectsPool = ["AP Calculus AB", "SAT", "AP Chemistry", "Algebra 2", "AP Physics 1", "Geometry", "BCA/BCTS Entrance Exam", "AP Biology", "Precalculus", "College Consulting & Essays", "Middle school math (grades K–8)", "AP Computer Science A"];
 
   let sessionCount = 0;
@@ -166,15 +205,21 @@ async function seedDemo(adminId: mongoose.Types.ObjectId, generalId: mongoose.Ty
     const channel = await Channel.create({ kind: "lead", name: `${parents[i]} family`, lead: lead._id, topic: `${student.name} · ${subject}`, createdBy: adminId, createdAt, lastMessageAt: createdAt });
     lead.channel = channel._id;
     await Message.create({ channel: channel._id, kind: "system", body: `New lead: ${student.name} (grade ${grade}) needs help with ${subject}.`, createdAt });
-    await ActivityLog.create({ action: "lead.created", entityType: "lead", entityId: lead._id, summary: "Lead submitted via onboarding form", createdAt });
+    await ActivityLog.create({ action: "lead.created", entityType: "lead", entityId: lead._id, summary: "New request from the website", createdAt });
+    if (status !== "new") {
+      const at = addDays(createdAt, 1);
+      lead.contactLog.push({ by: adminId, channel: "text", note: "Intro text", at });
+      lead.lastContactAt = at;
+      lead.contactedAt = at;
+    }
 
     const tutor = tutors[i % tutors.length];
-    if (status === "claimed") {
+    if (status === "contacted" && i % 2 === 0) {
       await ClaimRequest.create({ lead: lead._id, tutor: tutor._id, message: `I'd love to work with ${student.name.split(" ")[0]}. I've tutored ${subject} for two years.` });
       await Message.create({ channel: channel._id, author: tutor._id, body: `Claiming this one, ${subject} is my strongest subject.`, createdAt: addDays(createdAt, 1) });
     }
 
-    if (["assigned", "onboarding", "active", "paused"].includes(status)) {
+    if (["matched", "active", "paused"].includes(status)) {
       const assignedAt = addDays(createdAt, 1 + rand(3));
       lead.assignedTutors = [tutor._id];
       lead.assignedAt = assignedAt;
@@ -197,18 +242,6 @@ async function seedDemo(adminId: mongoose.Types.ObjectId, generalId: mongoose.Ty
       await ActivityLog.create({ actor: adminId, action: "lead.assigned", entityType: "lead", entityId: lead._id, summary: `Assigned to ${tutor.name}`, createdAt: assignedAt });
 
       if (status === "active" || status === "paused") {
-        const family = await User.create({
-          name: lead.parent.name,
-          email: lead.parent.email,
-          role: "family",
-          status: "active",
-          passwordHash,
-          phone: lead.parent.phone,
-          lead: lead._id,
-          onboarding: { status: "complete", completedAt: addDays(assignedAt, 2) },
-        });
-        lead.familyUser = family._id;
-
         // weekly sessions from activation until two weeks out
         const day = 1 + (i % 5);
         let cursor = startOfDay(addDays(assignedAt, 3));
@@ -238,6 +271,13 @@ async function seedDemo(adminId: mongoose.Types.ObjectId, generalId: mongoose.Ty
             sessionCount++;
           }
           cursor = addDays(cursor, 1);
+        }
+        const firstHeld = await Session.findOne({ assignment: assignment._id, status: "completed" }).sort({ start: 1 });
+        if (firstHeld) {
+          const hrs = (firstHeld.end.getTime() - firstHeld.start.getTime()) / 3_600_000;
+          const recent = firstHeld.start > subDays(new Date(), 21);
+          assignment.set("fee", { amount: hrs * tier.rate, status: recent ? "due" : "paid", session: firstHeld._id, dueAt: firstHeld.end, paidAt: recent ? undefined : addDays(firstHeld.end, 3) });
+          await assignment.save();
         }
       }
     }

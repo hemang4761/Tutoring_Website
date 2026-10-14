@@ -17,6 +17,7 @@ export async function assignTutorToLead(input: {
   studentId?: string;
   subjects?: string[];
   rateTier?: string;
+  rate?: number;
   claimId?: Id;
 }) {
   const lead = await Lead.findById(input.leadId);
@@ -28,7 +29,7 @@ export async function assignTutorToLead(input: {
   if (!students.length) throw new ActionError("This lead has no students yet.");
 
   const rateTier = (input.rateTier || lead.rateTier || "hs") as "k8" | "hs" | "testprep" | "specialized";
-  const rate = await rateFor(rateTier);
+  const rate = typeof input.rate === "number" && input.rate > 0 ? input.rate : await rateFor(rateTier);
   const assignments: Array<{ _id: { toString(): string } }> = [];
   for (const student of students) {
     const exists = await Assignment.findOne({ lead: lead._id, studentId: student._id, tutor: tutor._id, status: { $ne: "ended" } });
@@ -49,7 +50,7 @@ export async function assignTutorToLead(input: {
   if (!assignments.length) throw new ActionError(`${tutor.name} is already assigned to this student.`);
 
   if (!lead.assignedTutors.some((t) => t.toString() === tutor._id.toString())) lead.assignedTutors.push(tutor._id);
-  if (["new", "contacted", "open", "claimed"].includes(lead.status)) lead.status = "assigned";
+  if (["new", "contacted", "paused", "ended", "lost"].includes(lead.status)) lead.status = "matched";
   lead.assignedAt ??= new Date();
   if (!lead.rateTier) lead.rateTier = rateTier;
   lead.lastActivityAt = new Date();
@@ -95,7 +96,7 @@ export async function assignTutorToLead(input: {
         ["Subjects", (input.subjects?.length ? input.subjects : lead.subjects).join(", ")],
         ["Rate", `$${rate}/hr`],
       ],
-      cta: { label: "Open my students", url: `${appUrl()}/tutor/students` },
+      cta: { label: "Open BCLearns", url: `${appUrl()}/tutor` },
     }),
     ...losers.map((c) =>
       sendEmail({
@@ -103,8 +104,8 @@ export async function assignTutorToLead(input: {
         kind: "claim_declined",
         subject: "Update on your claim",
         heading: "This student was matched with another tutor",
-        paragraphs: [`Thanks for claiming ${studentNames}. This time another tutor was a better fit. Keep an eye on the claim board for new students!`],
-        cta: { label: "View claim board", url: `${appUrl()}/tutor/claim-board` },
+        paragraphs: [`Thanks for claiming ${studentNames}. This time another tutor was a better fit. Keep an eye out for the next one!`],
+        cta: { label: "Open BCLearns", url: `${appUrl()}/tutor` },
       }),
     ),
   ]);

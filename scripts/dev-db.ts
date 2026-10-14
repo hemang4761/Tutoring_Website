@@ -9,7 +9,7 @@ async function main() {
   fs.mkdirSync(dbPath, { recursive: true });
   const replSet = await MongoMemoryReplSet.create({
     replSet: { name: "rs0", count: 1, storageEngine: "wiredTiger" },
-    instanceOpts: [{ port: 27027, dbPath }],
+    instanceOpts: [{ port: 27027, dbPath, launchTimeout: 180_000 }],
   });
   console.log(`[dev-db] running at ${replSet.getUri("bclearns")}`);
   const stop = async () => {

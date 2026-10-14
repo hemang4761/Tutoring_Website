@@ -1,8 +1,9 @@
 import "server-only";
 import { cache } from "react";
 import { redirect } from "next/navigation";
+import { Types } from "mongoose";
 import { auth } from "@/lib/auth";
-import { homeFor } from "@/lib/auth.config";
+import { AUTH_DISABLED, homeFor } from "@/lib/auth.config";
 import { connectDB } from "@/lib/db";
 import type { Role } from "@/lib/constants";
 import { User, type UserDoc } from "@/models";
@@ -12,11 +13,25 @@ export type CurrentUser = UserDoc;
 // fresh db lookup per request so role/onboarding changes apply immediately
 export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
   const session = await auth();
-  if (!session?.user?.id) return null;
+  if (session?.user?.id) {
+    await connectDB();
+    const user = await User.findById(session.user.id).lean<CurrentUser>();
+    if (!user || user.status === "disabled") return null;
+    return user;
+  }
+  if (!AUTH_DISABLED) return null;
   await connectDB();
-  const user = await User.findById(session.user.id).lean<CurrentUser>();
-  if (!user || user.status === "disabled") return null;
-  return user;
+  const admin = await User.findOne({ role: "admin", status: { $ne: "disabled" } }).sort({ createdAt: 1 }).lean<CurrentUser>();
+  if (admin) return admin;
+  return {
+    _id: new Types.ObjectId("000000000000000000000001"),
+    name: "Preview",
+    email: "preview@bclearns.local",
+    role: "admin",
+    status: "active",
+    onboarding: { status: "complete", responses: [] },
+    notifyByEmail: true,
+  } as unknown as CurrentUser;
 });
 
 export function isOnboarded(user: Pick<CurrentUser, "role" | "onboarding">) {

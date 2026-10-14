@@ -27,9 +27,7 @@ type Settings = {
 export function SettingsForms({
   settings,
   tutorSteps,
-  familySteps,
   tutorIntro,
-  familyIntro,
   admins,
 }: {
   settings: Settings;
@@ -42,7 +40,6 @@ export function SettingsForms({
   const [pending, start] = useTransition();
   const [s, setS] = useState(settings);
   const [tIntro, setTIntro] = useState(tutorIntro);
-  const [fIntro, setFIntro] = useState(familyIntro);
 
   return (
     <div className="space-y-6">
@@ -62,17 +59,17 @@ export function SettingsForms({
               <Input value={s.replyTo} onChange={(e) => setS({ ...s, replyTo: e.target.value })} />
             </Field>
           </div>
-          <Field label="Extra notify emails" hint="Comma-separated. Added to every new-lead blast.">
+          <Field label="Also notify" hint="Extra emails that get new-request alerts, comma separated.">
             <Input value={s.extraNotifyEmails} onChange={(e) => setS({ ...s, extraNotifyEmails: e.target.value })} />
           </Field>
           <div className="flex flex-wrap gap-6">
             <label className="flex items-center gap-2 text-sm">
               <Switch checked={s.notifyTutorsOnNewLead} onCheckedChange={(v) => setS({ ...s, notifyTutorsOnNewLead: v })} />
-              Email tutors on new leads
+              Email tutors when a new student comes in
             </label>
             <label className="flex items-center gap-2 text-sm">
               <Switch checked={s.remindersEnabled} onCheckedChange={(v) => setS({ ...s, remindersEnabled: v })} />
-              Session reminders
+              Remind tutors the day before
             </label>
             <label className="flex items-center gap-2 text-sm">
               <Switch checked={s.digestEnabled} onCheckedChange={(v) => setS({ ...s, digestEnabled: v })} />
@@ -102,16 +99,6 @@ export function SettingsForms({
           onClick={() => start(async () => toastResult(await saveOnboardingTemplate("tutor", tIntro, tutorSteps)))}
         >
           Save tutor template
-        </Button>
-      </Panel>
-      <Panel title="Family onboarding">
-        <Textarea className="mb-3" value={fIntro} onChange={(e) => setFIntro(e.target.value)} rows={3} />
-        <Button
-          variant="outline"
-          disabled={pending}
-          onClick={() => start(async () => toastResult(await saveOnboardingTemplate("family", fIntro, familySteps)))}
-        >
-          Save family template
         </Button>
       </Panel>
 

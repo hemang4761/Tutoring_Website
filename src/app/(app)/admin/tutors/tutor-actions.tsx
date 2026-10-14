@@ -38,7 +38,10 @@ export function TutorAdminControls({
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between gap-3">
-        <Label htmlFor="site">Show on public site</Label>
+        <div>
+          <Label htmlFor="site">Show on public site</Label>
+          <p className="text-xs text-muted-foreground">Used when Website is not using custom tutor cards.</p>
+        </div>
         <Switch
           id="site"
           checked={showOnSite}

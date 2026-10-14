@@ -11,11 +11,11 @@ type Item = {
 };
 
 const HREF: Record<string, (id: string) => string> = {
-  lead: (id) => `/admin/leads/${id}`,
+  lead: (id) => `/admin/clients?client=${id}`,
   tutor: (id) => `/admin/tutors/${id}`,
-  assignment: (id) => `/admin/assignments`,
+  assignment: () => `/admin/clients`,
   application: () => `/admin/tutors?tab=applications`,
-  request: () => `/admin/requests`,
+  request: () => `/admin`,
 };
 
 export function ActivityFeed({ items, showEntityLinks }: { items: Item[]; showEntityLinks?: boolean }) {

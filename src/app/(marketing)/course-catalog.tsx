@@ -1,21 +1,25 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { CATALOG } from "@/lib/catalog";
 
 const COLLEGE_RE = /college|consulting|essay|application/;
 
-export function CourseCatalog() {
+export function CourseCatalog({
+  groups: source,
+  collegeNote,
+}: {
+  groups: { label: string; courses: string[] }[];
+  collegeNote: string;
+}) {
   const [query, setQuery] = useState("");
   const q = query.trim().toLowerCase();
   const tokens = useMemo(() => q.split(/\s+/).filter(Boolean), [q]);
 
-  // specialized courses are shown in the mentorship slider, not the catalog list
-  const groups = CATALOG.filter((g) => g.key !== "specialized").map((g) => ({
+  const groups = source.map((g) => ({
     ...g,
-    visible: g.courses.filter((course) => tokens.every((t) => course.search.includes(t))),
+    visible: g.courses.filter((course) => tokens.every((t) => course.toLowerCase().includes(t))),
   }));
-  const showCollege = !q || COLLEGE_RE.test(q);
+  const showCollege = Boolean(collegeNote) && (!q || COLLEGE_RE.test(q) || tokens.every((t) => collegeNote.toLowerCase().includes(t)));
   const total = groups.reduce((n, g) => n + g.visible.length, 0) + (showCollege ? 1 : 0);
 
   return (
@@ -41,23 +45,23 @@ export function CourseCatalog() {
       </p>
 
       <div className={`expertise-browse${q ? " has-query is-searching" : ""}`}>
-        {groups.map((g) => (
+        {groups.map((g, gi) => (
           <div
-            key={g.key}
+            key={`${g.label}-${gi}`}
             className={`expertise-group${g.visible.length === 0 ? " is-hidden" : ""}`}
-            data-subject={g.key}
+            data-subject={g.label}
           >
             <h4 className="expertise-subject-heading">{g.label}</h4>
             <ul className="course-list">
-              {g.courses.map((course) => {
+              {g.courses.map((course, i) => {
                 const shown = g.visible.includes(course);
                 return (
                   <li
-                    key={course.name}
+                    key={`${course}-${i}`}
                     className={`course-item${shown ? "" : " is-hidden"}`}
                     data-subject={shown ? g.label : undefined}
                   >
-                    {course.name}
+                    {course}
                   </li>
                 );
               })}
@@ -69,10 +73,7 @@ export function CourseCatalog() {
           data-subject="college"
         >
           <h4 className="expertise-subject-heading">College Consulting</h4>
-          <p className="expertise-college-desc">
-            One-on-one support to build a strong application: narrative strategy, essay drafting and
-            revision, and list-building.
-          </p>
+          <p className="expertise-college-desc">{collegeNote}</p>
         </div>
       </div>
     </>

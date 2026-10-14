@@ -6,20 +6,19 @@ import { connectDB } from "@/lib/db";
 import { logActivity } from "@/lib/activity";
 import { assignTutorToLead } from "@/lib/assign";
 import { createLeadChannel, postSystemMessage } from "@/lib/channels";
-import { sendInvite } from "@/lib/invites";
+import { purgeLeads } from "@/lib/purge";
 import { ActionError, action, requireAdmin, requireStaff } from "@/lib/session";
-import { LEAD_STATUSES, LEAD_STATUS_LABELS, RATE_TIERS, type LeadStatus } from "@/lib/constants";
-import { Assignment, Channel, ClaimRequest, Lead, Message, Note, Session, User } from "@/models";
+import { CONTACT_CHANNELS, CONTACT_CHANNEL_LABELS, LEAD_STATUSES, LEAD_STATUS_LABELS, RATE_TIERS, type ContactChannel, type LeadStatus } from "@/lib/constants";
+import { Assignment, Lead, Note } from "@/models";
 
-const revalidateLead = (id?: string) => {
+const revalidateLead = (..._ids: Array<string | undefined>) => {
   revalidatePath("/admin", "layout");
-  if (id) revalidatePath(`/admin/leads/${id}`);
   revalidatePath("/tutor", "layout");
 };
 
 const STATUS_TIMESTAMPS: Partial<Record<LeadStatus, "contactedAt" | "assignedAt" | "activeAt">> = {
   contacted: "contactedAt",
-  assigned: "assignedAt",
+  matched: "assignedAt",
   active: "activeAt",
 };
 
@@ -47,7 +46,7 @@ export async function updateLeadStatus(leadId: string, status: string, reason?: 
 
 const leadEditSchema = z.object({
   parentName: z.string().trim().min(2),
-  parentEmail: z.string().trim().email(),
+  parentEmail: z.string().trim().email().or(z.literal("")),
   parentPhone: z.string().trim().max(30).optional().default(""),
   location: z.string().trim().max(120).optional().default(""),
   goals: z.string().trim().max(2000).optional().default(""),
@@ -148,45 +147,7 @@ export async function deleteNote(noteId: string) {
   }, "Note deleted");
 }
 
-const manualLeadSchema = z.object({
-  parentName: z.string().trim().min(2, "Parent name is required"),
-  parentEmail: z.string().trim().email("Valid email required"),
-  parentPhone: z.string().trim().max(30).optional().default(""),
-  studentName: z.string().trim().min(1, "Student name is required"),
-  grade: z.string().min(1, "Grade is required"),
-  subjects: z.array(z.string()).min(1, "Pick at least one subject"),
-  source: z.string().optional().default(""),
-  notes: z.string().trim().optional().default(""),
-});
-
-export async function createManualLead(input: z.input<typeof manualLeadSchema>) {
-  return action(async () => {
-    const admin = await requireAdmin();
-    const parsed = manualLeadSchema.safeParse(input);
-    if (!parsed.success) throw new ActionError(parsed.error.issues[0].message);
-    const d = parsed.data;
-    await connectDB();
-    const lead = await Lead.create({
-      parent: { name: d.parentName, email: d.parentEmail, phone: d.parentPhone },
-      students: [{ name: d.studentName, grade: d.grade, subjects: d.subjects }],
-      subjects: d.subjects,
-      services: ["Academic tutoring"],
-      source: d.source,
-      message: d.notes,
-      owner: admin._id,
-      status: "new",
-    });
-    const channel = await createLeadChannel(lead, admin._id);
-    lead.channel = channel._id;
-    await lead.save();
-    await postSystemMessage(channel._id, `${admin.name} added this lead manually: ${d.studentName} (grade ${d.grade}) · ${d.subjects.join(", ")}`);
-    await logActivity({ actor: admin._id, action: "lead.created", entityType: "lead", entityId: lead._id, summary: `Lead added manually by ${admin.name}` });
-    revalidateLead();
-    return lead._id.toString();
-  }, "Lead created");
-}
-
-export async function assignTutor(leadId: string, input: { tutorId: string; studentId?: string; subjects?: string[]; rateTier?: string }) {
+export async function assignTutor(leadId: string, input: { tutorId: string; studentId?: string; subjects?: string[]; rateTier?: string; rate?: number }) {
   return action(async () => {
     const admin = await requireAdmin();
     await connectDB();
@@ -218,55 +179,133 @@ export async function updateAssignment(assignmentId: string, input: { status?: s
   }, "Assignment updated");
 }
 
-export async function inviteFamily(leadId: string) {
-  return action(async () => {
-    const admin = await requireAdmin();
-    await connectDB();
-    const lead = await Lead.findById(leadId);
-    if (!lead) throw new ActionError("Lead not found.");
-    if (!(await Assignment.exists({ lead: lead._id, status: { $ne: "ended" } }))) {
-      throw new ActionError("Assign a tutor before creating the family's portal account.");
-    }
-    let user = lead.familyUser ? await User.findById(lead.familyUser) : await User.findOne({ email: lead.parent.email });
-    if (user && user.role !== "family") throw new ActionError("That email already belongs to a staff account.");
-    if (user && user.status === "active") throw new ActionError("This family already has an active account.");
-    if (!user) {
-      user = await User.create({
-        name: lead.parent.name,
-        email: lead.parent.email,
-        phone: lead.parent.phone,
-        role: "family",
-        status: "invited",
-        lead: lead._id,
-      });
-    }
-    lead.familyUser = user._id;
-    if (["assigned", "claimed", "open", "contacted", "new"].includes(lead.status)) lead.status = "onboarding";
-    await lead.save();
-    await sendInvite(user);
-    await logActivity({ actor: admin._id, action: "family.invited", entityType: "lead", entityId: lead._id, summary: `Portal invite sent to ${user.email}` });
-    await postSystemMessage(lead.channel, `${admin.name} sent the family portal invite.`);
-    revalidateLead(leadId);
-  }, "Invite sent");
-}
-
 export async function deleteLead(leadId: string) {
   return action(async () => {
     const admin = await requireAdmin();
     await connectDB();
     const lead = await Lead.findById(leadId);
     if (!lead) throw new ActionError("Lead not found.");
-    if (await Session.exists({ lead: lead._id })) throw new ActionError("This lead has sessions. Mark it lost instead of deleting.");
-    const channels = await Channel.find({ lead: lead._id }).select("_id");
-    await Message.deleteMany({ channel: { $in: channels.map((c) => c._id) } });
-    await Channel.deleteMany({ lead: lead._id });
-    await Promise.all([
-      ClaimRequest.deleteMany({ lead: lead._id }),
-      Assignment.deleteMany({ lead: lead._id }),
-      Note.deleteMany({ entityType: "lead", entityId: lead._id }),
-    ]);
-    await lead.deleteOne();
-    await logActivity({ actor: admin._id, action: "lead.deleted", entityType: "lead", entityId: lead._id, summary: `Deleted lead for ${lead.parent.name}` });
+    await purgeLeads([lead._id]);
+    await logActivity({ actor: admin._id, action: "lead.deleted", entityType: "user", entityId: admin._id, summary: `Deleted client ${lead.parent.name}` });
     revalidateLead();
-  }, "Lead deleted");
+  }, "Client deleted");
+}
+
+// one tap on Text/Call/Email records the touchpoint; new clients move to contacted
+export async function logContact(leadId: string, channel: ContactChannel, note?: string) {
+  return action(async () => {
+    const admin = await requireAdmin();
+    if (!CONTACT_CHANNELS.includes(channel)) throw new ActionError("Unknown channel.");
+    await connectDB();
+    const lead = await Lead.findById(leadId);
+    if (!lead) throw new ActionError("Client not found.");
+    const now = new Date();
+    lead.contactLog.push({ by: admin._id, channel, note: note?.trim() || undefined, at: now });
+    lead.lastContactAt = now;
+    lead.lastActivityAt = now;
+    if (lead.status === "new") {
+      lead.status = "contacted";
+      lead.contactedAt ??= now;
+    }
+    await lead.save();
+    await logActivity({ actor: admin._id, action: "lead.contact", entityType: "lead", entityId: lead._id, summary: `${CONTACT_CHANNEL_LABELS[channel]} ${lead.parent.name}` });
+    revalidateLead(leadId);
+    return lead.contactLog[lead.contactLog.length - 1]._id.toString();
+  }, "Logged");
+}
+
+export async function removeContact(leadId: string, entryId: string) {
+  return action(async () => {
+    await requireAdmin();
+    await connectDB();
+    const lead = await Lead.findById(leadId);
+    if (!lead) throw new ActionError("Client not found.");
+    lead.contactLog.pull({ _id: entryId });
+    lead.lastContactAt = lead.contactLog.length ? lead.contactLog[lead.contactLog.length - 1].at : undefined;
+    if (!lead.contactLog.length && lead.status === "contacted") lead.status = "new";
+    await lead.save();
+    revalidateLead(leadId);
+  }, "Removed");
+}
+
+export async function setFollowUp(leadId: string, at: string | null, note?: string) {
+  return action(async () => {
+    await requireAdmin();
+    await connectDB();
+    const when = at ? new Date(at) : null;
+    if (when && Number.isNaN(when.getTime())) throw new ActionError("Invalid date.");
+    await Lead.updateOne(
+      { _id: leadId },
+      when ? { followUp: { at: when, note: note?.trim() || "" } } : { $unset: { followUp: 1 } },
+    );
+    revalidateLead(leadId);
+  }, at ? "Follow-up set" : "Follow-up cleared");
+}
+
+export async function dismissQuiet(leadId: string) {
+  return action(async () => {
+    await requireAdmin();
+    await connectDB();
+    await Lead.updateOne({ _id: leadId }, { quietDismissedAt: new Date() });
+    revalidateLead(leadId);
+  });
+}
+
+const quickAddSchema = z
+  .object({
+    name: z.string().trim().min(2, "Add a name"),
+    phone: z.string().trim().max(30).optional().default(""),
+    email: z.string().trim().email("That email doesn't look right").or(z.literal("")).optional().default(""),
+    studentName: z.string().trim().max(100).optional().default(""),
+    grade: z.string().trim().max(10).optional().default(""),
+    need: z.string().trim().max(500).optional().default(""),
+    source: z.string().trim().max(60).optional().default(""),
+    contacted: z.boolean().optional().default(false),
+  })
+  .refine((d) => d.phone || d.email, { message: "Add a phone number or email", path: ["phone"] });
+
+export async function quickAddClient(input: z.input<typeof quickAddSchema>) {
+  return action(async () => {
+    const admin = await requireAdmin();
+    const parsed = quickAddSchema.safeParse(input);
+    if (!parsed.success) throw new ActionError(parsed.error.issues[0].message);
+    const d = parsed.data;
+    await connectDB();
+    const subjects = d.need ? d.need.split(/[,;]+/).map((x) => x.trim()).filter(Boolean) : [];
+    const now = new Date();
+    const lead = await Lead.create({
+      parent: { name: d.name, email: d.email, phone: d.phone, preferredContact: d.phone ? "text" : "email" },
+      students: [{ name: d.studentName || d.name, grade: d.grade, subjects }],
+      subjects,
+      services: ["Academic Tutoring"],
+      source: d.source || "Added by admin",
+      message: d.need,
+      owner: admin._id,
+      status: d.contacted ? "contacted" : "new",
+      contactedAt: d.contacted ? now : undefined,
+      lastContactAt: d.contacted ? now : undefined,
+      contactLog: d.contacted ? [{ by: admin._id, channel: "note", note: "Reached out to us", at: now }] : [],
+    });
+    const channel = await createLeadChannel(lead, admin._id);
+    lead.channel = channel._id;
+    await lead.save();
+    await postSystemMessage(channel._id, `${admin.name} added ${d.name}${d.need ? ` · ${d.need}` : ""}`);
+    await logActivity({ actor: admin._id, action: "lead.created", entityType: "lead", entityId: lead._id, summary: `Added ${d.name}` });
+    revalidateLead();
+    return lead._id.toString();
+  }, "Client added");
+}
+
+export async function setFeeStatus(assignmentId: string, status: "due" | "paid" | "waived") {
+  return action(async () => {
+    const admin = await requireAdmin();
+    await connectDB();
+    const a = await Assignment.findById(assignmentId);
+    if (!a) throw new ActionError("Match not found.");
+    a.set("fee.status", status);
+    a.set("fee.paidAt", status === "paid" ? new Date() : undefined);
+    await a.save();
+    await logActivity({ actor: admin._id, action: "fee." + status, entityType: "lead", entityId: a.lead, summary: `Fee for ${a.studentName} marked ${status}` });
+    revalidateLead(a.lead.toString());
+  }, status === "paid" ? "Fee marked paid" : "Fee updated");
 }

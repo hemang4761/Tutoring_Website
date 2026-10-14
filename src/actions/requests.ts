@@ -20,12 +20,11 @@ const createSchema = z.object({
 });
 
 const refresh = (id?: string) => {
-  revalidatePath("/admin/requests");
+  revalidatePath("/admin");
   revalidatePath("/tutor/requests");
   revalidatePath("/portal/requests");
   revalidatePath("/admin", "layout");
   revalidatePath("/tutor", "layout");
-  if (id) revalidatePath(`/admin/requests`);
 };
 
 export async function createRequest(input: z.input<typeof createSchema>) {
@@ -60,7 +59,7 @@ export async function createRequest(input: z.input<typeof createSchema>) {
         ["From", `${user.name} (${user.role})`],
         ["Type", data.type.replace(/_/g, " ")],
       ],
-      cta: { label: "Open request", url: `${appUrl()}/admin/requests?open=${req._id}` },
+      cta: { label: "Open the dashboard", url: `${appUrl()}/admin` },
     });
     refresh();
     return req._id.toString();

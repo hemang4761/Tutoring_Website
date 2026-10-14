@@ -7,7 +7,7 @@ import { findConflicts } from "@/lib/conflicts";
 import { connectDB } from "@/lib/db";
 import { ActionError, action, requireStaff, requireUser } from "@/lib/session";
 import { SESSION_STATUSES, type SessionStatus } from "@/lib/constants";
-import { Assignment, Session, TutorProfile } from "@/models";
+import { Assignment, Lead, Session, TutorProfile } from "@/models";
 
 const refresh = () => {
   revalidatePath("/admin/schedule");
@@ -122,14 +122,46 @@ export async function updateSessionStatus(sessionId: string, status: SessionStat
     const session = await Session.findById(sessionId);
     if (!session) throw new ActionError("Session not found.");
     if (user.role !== "admin" && session.tutor.toString() !== user._id.toString()) throw new ActionError("Not allowed.");
+    const was = session.status;
     session.status = status;
     if (notes !== undefined) session.notes = notes;
     if (privateNotes !== undefined) session.privateNotes = privateNotes;
     await session.save();
+    const first = was !== status ? await applyHeldEffects(session) : false;
     refresh();
-    revalidatePath(`/admin/leads/${session.lead}`);
     revalidatePath("/tutor/students");
+    // lets the ui offer a personal check-in after a family's first session
+    return { firstSession: first, leadId: session.lead.toString() };
   }, "Session updated");
+}
+
+// first held session makes the client active and puts bclearns' match fee on the tutor's tab
+async function applyHeldEffects(session: InstanceType<typeof Session>) {
+  const assignment = await Assignment.findById(session.assignment);
+  if (!assignment) return false;
+  if (session.status === "completed") {
+    let first = false;
+    if (assignment.fee?.status === "pending" || !assignment.fee?.status) {
+      const hrs = (session.end.getTime() - session.start.getTime()) / 3_600_000;
+      assignment.set("fee", { amount: Math.round(hrs * (assignment.rate ?? 0) * 100) / 100, status: "due", session: session._id, dueAt: new Date() });
+      await assignment.save();
+      first = true;
+    }
+    const lead = await Lead.findById(session.lead);
+    if (lead && lead.status !== "active") {
+      lead.status = "active";
+      lead.activeAt ??= new Date();
+      lead.lastActivityAt = new Date();
+      await lead.save();
+    }
+    return first;
+  }
+  // un-logging the session that set the fee puts it back to pending
+  if (assignment.fee?.status === "due" && assignment.fee.session?.toString() === session._id.toString()) {
+    assignment.set("fee", { status: "pending" });
+    await assignment.save();
+  }
+  return false;
 }
 
 export async function deleteSession(sessionId: string) {

@@ -8,7 +8,15 @@ export const initials = (name = "") =>
     .map((p) => p[0]?.toUpperCase())
     .join("") || "?";
 
-export const firstName = (name = "") => name.split(/\s+/)[0] ?? name;
+export const firstName = (name = "") => {
+  const trimmed = name.trim();
+  if (!trimmed) return "";
+  if (trimmed.includes(",")) {
+    const given = trimmed.split(",").slice(1).join(" ").trim();
+    if (given) return given.split(/\s+/)[0] ?? given;
+  }
+  return trimmed.split(/\s+/)[0] ?? trimmed;
+};
 
 type DateLike = Date | string | number | null | undefined;
 const toDate = (d: DateLike) => (d == null ? null : d instanceof Date ? d : new Date(d));

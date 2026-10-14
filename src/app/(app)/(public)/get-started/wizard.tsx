@@ -1,403 +1,421 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { Controller, useFieldArray, useForm, type FieldPath } from "react-hook-form";
+import { useRef, useState, useTransition, type KeyboardEvent } from "react";
+import Link from "next/link";
+import { useForm, type FieldPath } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import type { z } from "zod";
-import {
-  ArrowLeft,
-  ArrowRight,
-  BookOpen,
-  CheckCircle2,
-  GraduationCap,
-  Laptop,
-  Loader2,
-  MapPin,
-  Plus,
-  Repeat,
-  Sparkles,
-  Target,
-  Trash2,
-  Users,
-} from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Loader2, X } from "lucide-react";
 import { toast } from "sonner";
 import { submitLead } from "@/actions/intake";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Field } from "@/components/forms/field";
-import { SubjectPicker } from "@/components/forms/subject-picker";
-import { AvailabilityGrid } from "@/components/forms/availability-grid";
-import { ChoiceCards, MultiChoiceCards, PillChoice } from "@/components/forms/choice-cards";
-import { GRADES, LEAD_SOURCES } from "@/lib/constants";
-import { leadSchema, type LeadInput } from "@/lib/validation";
+import { TUTORING_REQUESTS } from "@/lib/constants";
+import { firstName } from "@/lib/format";
+import { leadSchema, type LeadData, type LeadInput } from "@/lib/validation";
 import { cn } from "@/lib/utils";
 
-type LeadOutput = z.output<typeof leadSchema>;
+type StepId =
+  | "name"
+  | "who"
+  | "grade"
+  | "service"
+  | "request"
+  | "courses"
+  | "hours"
+  | "comments"
+  | "also"
+  | "career"
+  | "academics"
+  | "activities"
+  | "colleges"
+  | "goals"
+  | "contact";
 
-const STEPS: Array<{ title: string; blurb: string; fields: FieldPath<LeadInput>[] }> = [
-  { title: "About you", blurb: "Who should we contact?", fields: ["parent"] },
-  { title: "Your student", blurb: "Who are we tutoring?", fields: ["students"] },
-  { title: "Goals", blurb: "What are you looking for?", fields: ["services", "goals", "format", "location"] },
-  { title: "Schedule", blurb: "When works best?", fields: ["availability", "sessionsPerWeek", "startTiming"] },
-  { title: "Finish", blurb: "Almost done", fields: ["source", "referral", "message"] },
-];
+type Field = FieldPath<LeadInput>;
 
-const SERVICES = [
-  { value: "Academic tutoring", label: "Academic tutoring", description: "Homework help, class support, and exam review", icon: <BookOpen className="size-4" /> },
-  { value: "Test prep", label: "Test prep", description: "SAT, ACT, AP, IB, and BCA entrance exams", icon: <Target className="size-4" /> },
-  { value: "College consulting", label: "College consulting", description: "Essays, applications, and strategy", icon: <GraduationCap className="size-4" /> },
-  { value: "Specialized mentorship", label: "Specialized mentorship", description: "Competition math and engineering", icon: <Sparkles className="size-4" /> },
-];
+const FIELDS: Record<StepId, Field[]> = {
+  name: ["name"],
+  who: ["respondent"],
+  grade: ["grade"],
+  service: ["service"],
+  request: ["tutoringRequest"],
+  courses: ["courses"],
+  hours: ["hoursPerWeek"],
+  comments: ["comments"],
+  also: ["alsoConsulting"],
+  career: ["careerInterests"],
+  academics: ["academics"],
+  activities: ["extracurriculars"],
+  colleges: ["collegeList"],
+  goals: ["consultingGoals"],
+  contact: ["email", "phone"],
+};
 
-const FORMAT_OPTIONS = [
-  { value: "online", label: "Online", description: "Video sessions from home", icon: <Laptop className="size-4" /> },
-  { value: "in_person", label: "In person", description: "Library or your home", icon: <MapPin className="size-4" /> },
-  { value: "either", label: "Either works", description: "We'll pick what fits best", icon: <Repeat className="size-4" /> },
-];
+const GRADES = ["K", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"];
+const HOURS = ["1", "2", "3", "4+"];
 
-const emptyStudent = { name: "", grade: "", school: "", subjects: [] as string[] };
+function stepsFor(service: string, also: string): StepId[] {
+  const head: StepId[] = ["name", "who", "grade", "service"];
+  const tutoring: StepId[] = ["request", "courses", "hours", "comments", "also"];
+  const college: StepId[] = ["career", "academics", "activities", "colleges", "goals"];
+  if (service === "college") return [...head, ...college, "contact"];
+  if (service === "tutoring") return [...head, ...tutoring, ...(also === "yes" ? college : []), "contact"];
+  return [...head, "contact"];
+}
+
+function formatPhone(value: string) {
+  const digits = value.replace(/\D/g, "").slice(0, 10);
+  if (digits.length < 4) return digits;
+  if (digits.length < 7) return `${digits.slice(0, 3)}-${digits.slice(3)}`;
+  return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
+}
+
+const inputClass =
+  "w-full border-0 border-b-2 border-navy/20 bg-transparent px-0 py-3 text-2xl text-navy placeholder:text-navy/30 focus:border-gold focus:outline-none focus:ring-0 sm:text-3xl";
+
+function Choice({ label, hint, selected, onClick }: { label: string; hint?: string; selected: boolean; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "flex w-full items-center justify-between gap-4 rounded-xl border-2 bg-white px-5 py-4 text-left transition-colors",
+        selected ? "border-navy bg-navy text-white" : "border-navy/10 text-navy hover:border-navy/40",
+      )}
+    >
+      <span>
+        <span className="block text-lg font-semibold">{label}</span>
+        {hint ? <span className={cn("block text-sm", selected ? "text-white/70" : "text-navy/60")}>{hint}</span> : null}
+      </span>
+      {selected ? <Check className="size-5 shrink-0 text-gold" /> : null}
+    </button>
+  );
+}
 
 export function OnboardingWizard() {
-  const [step, setStep] = useState(0);
+  const [step, setStep] = useState<StepId>("name");
   const [done, setDone] = useState(false);
   const [pending, startTransition] = useTransition();
+  const advancing = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const form = useForm<LeadInput, unknown, LeadOutput>({
+  const form = useForm<LeadInput, unknown, LeadData>({
     resolver: zodResolver(leadSchema),
-    mode: "onTouched",
     defaultValues: {
-      parent: { name: "", email: "", phone: "", preferredContact: "email" },
-      students: [emptyStudent],
-      services: [],
-      goals: "",
-      format: "either",
-      location: "",
-      availability: [],
-      availabilityNotes: "",
-      sessionsPerWeek: "",
-      startTiming: "",
-      source: "",
-      referral: "",
-      message: "",
+      name: "",
+      email: "",
+      grade: "",
+      phone: "",
+      respondent: "",
+      service: "",
+      tutoringRequest: "",
+      courses: "",
+      hoursPerWeek: "",
+      comments: "",
+      alsoConsulting: "",
+      careerInterests: "",
+      academics: "",
+      extracurriculars: "",
+      collegeList: "",
+      consultingGoals: "",
       website: "",
     },
   });
-  const { register, control, formState, trigger, handleSubmit, watch } = form;
+  const { register, formState, getValues, setValue, setError, clearErrors, handleSubmit, watch } = form;
   const errors = formState.errors;
-  const students = useFieldArray({ control, name: "students" });
 
-  const next = async () => {
-    const valid = await trigger(STEPS[step].fields, { shouldFocus: true });
-    if (valid) {
-      setStep((s) => Math.min(s + 1, STEPS.length - 1));
-      window.scrollTo({ top: 0, behavior: "smooth" });
+  const list = () => stepsFor(getValues("service"), getValues("alsoConsulting") ?? "");
+  const steps = stepsFor(watch("service"), watch("alsoConsulting") ?? "");
+  const index = Math.max(0, steps.indexOf(step));
+  const last = index === steps.length - 1;
+  const parent = watch("respondent") === "parent";
+
+  const validate = (id: StepId) => {
+    const parsed = leadSchema.safeParse(getValues());
+    let ok = true;
+    for (const field of FIELDS[id]) {
+      const issue = parsed.success ? undefined : parsed.error.issues.find((item) => item.path[0] === field);
+      if (issue) {
+        setError(field, { message: issue.message });
+        ok = false;
+      } else clearErrors(field);
+    }
+    return ok;
+  };
+
+  const submit = handleSubmit(
+    (data) =>
+      startTransition(async () => {
+        const res = await submitLead(data);
+        if (res.ok) setDone(true);
+        else toast.error(res.error);
+      }),
+    () => {
+      const bad = list().find((id) => FIELDS[id].some((f) => errors[f as keyof typeof errors]));
+      if (bad) setStep(bad);
+    },
+  );
+
+  const next = () => {
+    if (advancing.current) clearTimeout(advancing.current);
+    if (!validate(step)) return;
+    const ids = list();
+    const at = ids.indexOf(step);
+    if (at === ids.length - 1) submit();
+    else setStep(ids[at + 1]);
+  };
+
+  const back = () => {
+    const ids = list();
+    const at = ids.indexOf(step);
+    if (at > 0) setStep(ids[at - 1]);
+  };
+
+  // option taps move on by themselves after a beat
+  const choose = (field: Field, value: string) => {
+    setValue(field, value as never, { shouldDirty: true });
+    clearErrors(field);
+    if (advancing.current) clearTimeout(advancing.current);
+    advancing.current = setTimeout(next, 220);
+  };
+
+  const onAreaKey = (event: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) {
+      event.preventDefault();
+      next();
     }
   };
 
-  const onSubmit = handleSubmit((data) =>
-    startTransition(async () => {
-      const res = await submitLead(data);
-      if (res.ok) {
-        setDone(true);
-        window.scrollTo({ top: 0, behavior: "smooth" });
-      } else toast.error(res.error);
-    }),
-  );
+  const shell = "fixed inset-0 z-50 flex flex-col overflow-y-auto bg-[#f9f9f9] text-navy";
 
   if (done) {
-    const parent = watch("parent.name").split(" ")[0];
+    const name = firstName(getValues("name"));
+    const college = getValues("service") === "college" || getValues("alsoConsulting") === "yes";
     return (
-      <div className="rounded-2xl border bg-card p-8 text-center shadow-xl sm:p-12">
-        <span className="mx-auto flex size-14 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-500/15">
-          <CheckCircle2 className="size-7" />
-        </span>
-        <h2 className="mt-5 text-2xl font-bold">You&apos;re all set{parent ? `, ${parent}` : ""}!</h2>
-        <p className="mx-auto mt-2 max-w-md text-muted-foreground">
-          We&apos;ve received your information and sent a confirmation to your email. A member of our team will reach out
-          within 24–48 hours to match you with a tutor.
-        </p>
-        <div className="mx-auto mt-8 grid max-w-lg gap-3 text-left sm:grid-cols-3">
-          {["We review your request", "We match a tutor", "You get portal access"].map((t, i) => (
-            <div key={t} className="rounded-xl bg-secondary p-3">
-              <p className="font-heading text-sm font-bold text-primary">Step {i + 1}</p>
-              <p className="text-xs text-muted-foreground">{t}</p>
-            </div>
-          ))}
+      <div className={shell}>
+        <div className="m-auto max-w-xl px-6 py-16 text-center animate-in fade-in slide-in-from-bottom-2 duration-500">
+          <span className="mx-auto flex size-14 items-center justify-center rounded-full bg-gold text-navy">
+            <Check className="size-7" />
+          </span>
+          <h1 className="mt-8 font-heading text-4xl font-bold">Thanks{name ? `, ${name}` : ""}.</h1>
+          <p className="mt-4 text-lg text-navy/70">
+            We&apos;ll be in touch within a couple of days
+            {college ? ", starting with a free 30 minute consultation" : ""}.
+          </p>
+          <Link href="/" className="mt-10 inline-block rounded-lg bg-navy px-6 py-3 font-semibold text-white hover:bg-navy-light">
+            Back to the site
+          </Link>
         </div>
-        <Button asChild variant="outline" className="mt-8">
-          <a href="/">Back to the website</a>
-        </Button>
       </div>
     );
   }
 
-  return (
-    <form onSubmit={onSubmit} noValidate className="overflow-hidden rounded-2xl border bg-card shadow-xl">
-      <ol className="flex border-b bg-muted/40">
-        {STEPS.map((s, i) => (
-          <li key={s.title} className="flex-1">
+  const error = (id: Field) => {
+    const message = errors[id as keyof typeof errors]?.message;
+    return message ? <p className="mt-3 text-sm font-medium text-red-600">{String(message)}</p> : null;
+  };
+
+  const title: Record<StepId, string> = {
+    name: "What's your name?",
+    who: "Are you the student or a parent?",
+    grade: parent ? "What grade is your student in?" : "What grade are you in?",
+    service: "What can we help with?",
+    request: "What kind of tutoring?",
+    courses: "Which courses?",
+    hours: "About how many hours a week?",
+    comments: "Anything else we should know?",
+    also: "Interested in college consulting too?",
+    career: "What do you want to study or do?",
+    academics: "Grades, test scores, notable courses?",
+    activities: "What do you do outside of class?",
+    colleges: "Any schools in mind?",
+    goals: "What do you want out of consulting?",
+    contact: "How can we reach you?",
+  };
+  const optional: StepId[] = ["comments", "academics", "colleges"];
+
+  let body: React.ReactNode = null;
+  switch (step) {
+    case "name":
+      body = <input className={inputClass} placeholder="First and last name" autoComplete="name" autoFocus {...register("name")} />;
+      break;
+    case "who":
+      body = (
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Choice label="Student" selected={watch("respondent") === "student"} onClick={() => choose("respondent", "student")} />
+          <Choice label="Parent or guardian" selected={watch("respondent") === "parent"} onClick={() => choose("respondent", "parent")} />
+        </div>
+      );
+      break;
+    case "grade":
+      body = (
+        <div className="grid grid-cols-4 gap-3 sm:grid-cols-5">
+          {GRADES.map((g) => (
             <button
+              key={g}
               type="button"
-              disabled={i > step}
-              onClick={() => i < step && setStep(i)}
+              onClick={() => choose("grade", g)}
               className={cn(
-                "flex w-full flex-col items-center gap-1 px-1 py-3 text-xs font-medium transition-colors sm:flex-row sm:justify-center sm:gap-2 sm:text-sm",
-                i === step ? "text-foreground" : i < step ? "text-primary hover:bg-secondary" : "text-muted-foreground",
+                "rounded-xl border-2 py-4 text-lg font-semibold transition-colors",
+                watch("grade") === g ? "border-navy bg-navy text-white" : "border-navy/10 bg-white hover:border-navy/40",
               )}
             >
-              <span
-                className={cn(
-                  "flex size-6 items-center justify-center rounded-full text-xs font-bold",
-                  i < step
-                    ? "bg-primary text-primary-foreground"
-                    : i === step
-                      ? "bg-gold text-navy"
-                      : "border bg-background text-muted-foreground",
-                )}
-              >
-                {i < step ? <CheckCircle2 className="size-3.5" /> : i + 1}
-              </span>
-              <span className="hidden sm:inline">{s.title}</span>
+              {g}
             </button>
-          </li>
-        ))}
-      </ol>
-      <div className="h-1 bg-muted">
-        <div className="h-full bg-gold transition-all duration-500" style={{ width: `${((step + 1) / STEPS.length) * 100}%` }} />
-      </div>
-
-      <div className="space-y-6 p-6 sm:p-8">
-        <div>
-          <h2 className="text-xl font-bold">{STEPS[step].blurb}</h2>
-          <p className="text-sm text-muted-foreground">
-            Step {step + 1} of {STEPS.length}
-          </p>
+          ))}
         </div>
+      );
+      break;
+    case "service":
+      body = (
+        <div className="grid gap-3">
+          <Choice
+            label="Academic tutoring"
+            hint="Elementary through high school, and test prep"
+            selected={watch("service") === "tutoring"}
+            onClick={() => choose("service", "tutoring")}
+          />
+          <Choice
+            label="College consulting"
+            hint="Essays, college lists, applications"
+            selected={watch("service") === "college"}
+            onClick={() => choose("service", "college")}
+          />
+        </div>
+      );
+      break;
+    case "request":
+      body = (
+        <div className="grid gap-3 sm:grid-cols-2">
+          {TUTORING_REQUESTS.map((option) => (
+            <Choice key={option} label={option} selected={watch("tutoringRequest") === option} onClick={() => choose("tutoringRequest", option)} />
+          ))}
+        </div>
+      );
+      break;
+    case "courses":
+      body = <input className={inputClass} placeholder="AP Calculus AB, Honors Chemistry" autoFocus {...register("courses")} />;
+      break;
+    case "hours":
+      body = (
+        <div className="grid grid-cols-4 gap-3">
+          {HOURS.map((h) => (
+            <button
+              key={h}
+              type="button"
+              onClick={() => choose("hoursPerWeek", h)}
+              className={cn(
+                "rounded-xl border-2 py-5 text-xl font-semibold transition-colors",
+                watch("hoursPerWeek") === h ? "border-navy bg-navy text-white" : "border-navy/10 bg-white hover:border-navy/40",
+              )}
+            >
+              {h}
+            </button>
+          ))}
+        </div>
+      );
+      break;
+    case "also":
+      body = (
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Choice label="Yes" selected={watch("alsoConsulting") === "yes"} onClick={() => choose("alsoConsulting", "yes")} />
+          <Choice label="No, just tutoring" selected={watch("alsoConsulting") === "no"} onClick={() => choose("alsoConsulting", "no")} />
+        </div>
+      );
+      break;
+    case "contact":
+      body = (
+        <div className="space-y-6">
+          <input className={inputClass} type="email" placeholder="Email" autoComplete="email" autoFocus {...register("email")} />
+          {error("email")}
+          <input
+            className={inputClass}
+            type="tel"
+            inputMode="tel"
+            placeholder="Phone  XXX-XXX-XXXX"
+            autoComplete="tel"
+            maxLength={12}
+            value={watch("phone")}
+            onChange={(e) => setValue("phone", formatPhone(e.target.value))}
+          />
+        </div>
+      );
+      break;
+    default: {
+      const field: Record<string, Field> = {
+        comments: "comments",
+        career: "careerInterests",
+        academics: "academics",
+        activities: "extracurriculars",
+        colleges: "collegeList",
+        goals: "consultingGoals",
+      };
+      body = (
+        <>
+          <textarea
+            rows={4}
+            autoFocus
+            onKeyDown={onAreaKey}
+            className={cn(inputClass, "resize-none text-xl sm:text-2xl")}
+            placeholder="Type your answer"
+            {...register(field[step])}
+          />
+          <p className="mt-2 hidden text-xs text-navy/50 sm:block">Ctrl + Enter to continue</p>
+        </>
+      );
+    }
+  }
 
-        {step === 0 && (
-          <div className="grid gap-5 sm:grid-cols-2">
-            <Field label="Parent or guardian name" htmlFor="pname" error={errors.parent?.name?.message} className="sm:col-span-2">
-              <Input id="pname" autoComplete="name" {...register("parent.name")} aria-invalid={!!errors.parent?.name} />
-            </Field>
-            <Field label="Email" htmlFor="pemail" error={errors.parent?.email?.message}>
-              <Input id="pemail" type="email" autoComplete="email" {...register("parent.email")} aria-invalid={!!errors.parent?.email} />
-            </Field>
-            <Field label="Phone" htmlFor="pphone" error={errors.parent?.phone?.message}>
-              <Input id="pphone" type="tel" autoComplete="tel" {...register("parent.phone")} aria-invalid={!!errors.parent?.phone} />
-            </Field>
-            <Field label="Best way to reach you" className="sm:col-span-2">
-              <Controller
-                control={control}
-                name="parent.preferredContact"
-                render={({ field }) => (
-                  <PillChoice
-                    options={["Email", "Phone", "Text"]}
-                    value={field.value ? field.value[0].toUpperCase() + field.value.slice(1) : ""}
-                    onChange={(v) => field.onChange((v || "Email").toLowerCase())}
-                  />
-                )}
-              />
-            </Field>
-          </div>
-        )}
-
-        {step === 1 && (
-          <div className="space-y-4">
-            {students.fields.map((f, i) => (
-              <div key={f.id} className="space-y-4 rounded-xl border bg-muted/20 p-4 sm:p-5">
-                <div className="flex items-center justify-between">
-                  <p className="flex items-center gap-2 text-sm font-semibold">
-                    <Users className="size-4 text-primary" /> Student {i + 1}
-                  </p>
-                  {students.fields.length > 1 ? (
-                    <Button type="button" variant="ghost" size="sm" onClick={() => students.remove(i)}>
-                      <Trash2 /> Remove
-                    </Button>
-                  ) : null}
-                </div>
-                <div className="grid gap-4 sm:grid-cols-[1fr_140px]">
-                  <Field label="Student name" htmlFor={`sname${i}`} error={errors.students?.[i]?.name?.message}>
-                    <Input id={`sname${i}`} {...register(`students.${i}.name`)} aria-invalid={!!errors.students?.[i]?.name} />
-                  </Field>
-                  <Field label="Grade" error={errors.students?.[i]?.grade?.message}>
-                    <Controller
-                      control={control}
-                      name={`students.${i}.grade`}
-                      render={({ field }) => (
-                        <Select value={field.value} onValueChange={field.onChange}>
-                          <SelectTrigger className="h-9 w-full" aria-invalid={!!errors.students?.[i]?.grade}>
-                            <SelectValue placeholder="Grade" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {GRADES.map((g) => (
-                              <SelectItem key={g} value={g}>
-                                {g === "K" || g === "College" ? g : `Grade ${g}`}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      )}
-                    />
-                  </Field>
-                </div>
-                <Field label="School" htmlFor={`sschool${i}`} optional>
-                  <Input id={`sschool${i}`} {...register(`students.${i}.school`)} />
-                </Field>
-                <Field label="Subjects or courses" error={errors.students?.[i]?.subjects?.message} hint="Pick everything you'd like help with.">
-                  <Controller
-                    control={control}
-                    name={`students.${i}.subjects`}
-                    render={({ field }) => (
-                      <SubjectPicker value={field.value} onChange={field.onChange} invalid={!!errors.students?.[i]?.subjects} />
-                    )}
-                  />
-                </Field>
-              </div>
-            ))}
-            {students.fields.length < 5 ? (
-              <Button type="button" variant="outline" onClick={() => students.append(emptyStudent)}>
-                <Plus /> Add another student
-              </Button>
-            ) : null}
-          </div>
-        )}
-
-        {step === 2 && (
-          <div className="space-y-6">
-            <Field label="What kind of help are you looking for?" error={errors.services?.message}>
-              <Controller
-                control={control}
-                name="services"
-                render={({ field }) => <MultiChoiceCards options={SERVICES} value={field.value} onChange={field.onChange} />}
-              />
-            </Field>
-            <Field label="Goals" htmlFor="goals" optional hint="E.g. raise a grade, a target SAT score, an upcoming exam date.">
-              <Textarea id="goals" rows={3} {...register("goals")} placeholder="What would success look like?" />
-            </Field>
-            <Field label="Session format">
-              <Controller
-                control={control}
-                name="format"
-                render={({ field }) => <ChoiceCards columns={3} options={FORMAT_OPTIONS} value={field.value} onChange={field.onChange} />}
-              />
-            </Field>
-            <Field label="Town" htmlFor="location" optional hint="Helps us match in-person tutors nearby.">
-              <Input id="location" {...register("location")} placeholder="e.g. Hackensack" />
-            </Field>
-          </div>
-        )}
-
-        {step === 3 && (
-          <div className="space-y-6">
-            <Field label="When is your student usually free?" hint="Tap every time that usually works. Rough is fine.">
-              <Controller
-                control={control}
-                name="availability"
-                render={({ field }) => <AvailabilityGrid value={field.value} onChange={field.onChange} />}
-              />
-            </Field>
-            <div className="grid gap-6 sm:grid-cols-2">
-              <Field label="Sessions per week">
-                <Controller
-                  control={control}
-                  name="sessionsPerWeek"
-                  render={({ field }) => (
-                    <PillChoice options={["1", "2", "3+", "Not sure"]} value={field.value ?? ""} onChange={field.onChange} />
-                  )}
-                />
-              </Field>
-              <Field label="When would you like to start?">
-                <Controller
-                  control={control}
-                  name="startTiming"
-                  render={({ field }) => (
-                    <PillChoice options={["ASAP", "Within 2 weeks", "Next month", "Just exploring"]} value={field.value ?? ""} onChange={field.onChange} />
-                  )}
-                />
-              </Field>
-            </div>
-            <Field label="Scheduling notes" htmlFor="anotes" optional>
-              <Textarea id="anotes" rows={2} {...register("availabilityNotes")} placeholder="e.g. Fridays after 6pm only during soccer season" />
-            </Field>
-          </div>
-        )}
-
-        {step === 4 && (
-          <div className="space-y-5">
-            <div className="grid gap-5 sm:grid-cols-2">
-              <Field label="How did you hear about us?" optional>
-                <Controller
-                  control={control}
-                  name="source"
-                  render={({ field }) => (
-                    <Select value={field.value} onValueChange={field.onChange}>
-                      <SelectTrigger className="h-9 w-full">
-                        <SelectValue placeholder="Choose one" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {LEAD_SOURCES.map((s) => (
-                          <SelectItem key={s} value={s}>
-                            {s}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
-                />
-              </Field>
-              <Field label="Referred by" htmlFor="referral" optional>
-                <Input id="referral" {...register("referral")} placeholder="Name of who referred you" />
-              </Field>
-            </div>
-            <Field label="Anything else we should know?" htmlFor="message" optional>
-              <Textarea id="message" rows={4} {...register("message")} placeholder="Learning style, accommodations, questions for us..." />
-            </Field>
-            <input type="text" tabIndex={-1} autoComplete="off" className="hidden" aria-hidden {...register("website")} />
-            <Summary values={watch()} />
-          </div>
-        )}
-      </div>
-
-      <div className="flex items-center justify-between border-t bg-muted/30 px-6 py-4 sm:px-8">
-        <Button type="button" variant="ghost" onClick={() => setStep((s) => s - 1)} disabled={step === 0 || pending}>
-          <ArrowLeft /> Back
-        </Button>
-        {step < STEPS.length - 1 ? (
-          <Button type="button" size="lg" onClick={next} className="px-5">
-            Continue <ArrowRight />
-          </Button>
-        ) : (
-          <Button type="submit" size="lg" disabled={pending} className="bg-gold px-5 text-navy hover:bg-gold-dark">
-            {pending ? <Loader2 className="animate-spin" /> : <CheckCircle2 />}
-            Submit
-          </Button>
-        )}
-      </div>
-    </form>
-  );
-}
-
-function Summary({ values }: { values: LeadInput }) {
-  const rows: Array<[string, string]> = [
-    ["Contact", `${values.parent.name} · ${values.parent.email}`],
-    ["Students", values.students.map((s) => `${s.name || "Student"} (${s.grade || "?"})`).join(", ")],
-    ["Subjects", [...new Set(values.students.flatMap((s) => s.subjects))].join(", ") || "—"],
-    ["Looking for", values.services.join(", ") || "—"],
-    ["Availability", values.availability.length ? `${values.availability.length} time windows` : values.availabilityNotes || "Flexible"],
-  ];
   return (
-    <div className="rounded-xl border bg-secondary/50 p-4">
-      <p className="mb-2 text-sm font-semibold">Review</p>
-      <dl className="grid gap-1.5 text-sm">
-        {rows.map(([k, v]) => (
-          <div key={k} className="grid grid-cols-[110px_1fr] gap-2">
-            <dt className="text-muted-foreground">{k}</dt>
-            <dd className="font-medium">{v}</dd>
-          </div>
-        ))}
-      </dl>
+    <div className={shell}>
+      <div className="h-1 shrink-0 bg-navy/10">
+        <div className="h-full bg-gold transition-all duration-500" style={{ width: `${Math.max(4, (index / (steps.length - 1)) * 100)}%` }} />
+      </div>
+      <header className="flex shrink-0 items-center justify-between px-6 py-5 sm:px-10">
+        <Link href="/" className="font-heading text-xl font-bold">
+          BCLearns
+        </Link>
+        <Link href="/" aria-label="Close" className="rounded-full p-2 text-navy/50 hover:bg-navy/5 hover:text-navy">
+          <X className="size-5" />
+        </Link>
+      </header>
+
+      <form
+        noValidate
+        onSubmit={(event) => {
+          event.preventDefault();
+          next();
+        }}
+        className="mx-auto flex w-full max-w-2xl flex-1 flex-col justify-center px-6 pb-24"
+      >
+        <div key={step} className="animate-in fade-in slide-in-from-bottom-3 duration-300">
+          {optional.includes(step) ? <p className="mb-3 text-sm font-semibold text-navy/40">Optional</p> : null}
+          <h1 className="mb-8 font-heading text-3xl leading-tight font-bold sm:text-4xl">{title[step]}</h1>
+          {body}
+          {step !== "contact" ? error(FIELDS[step][0]) : error("phone")}
+        </div>
+        <input type="text" tabIndex={-1} autoComplete="off" className="hidden" aria-hidden {...register("website")} />
+
+        <div className="mt-10 flex items-center gap-3">
+          {index > 0 ? (
+            <button
+              type="button"
+              onClick={back}
+              disabled={pending}
+              className="inline-flex items-center gap-2 rounded-lg px-4 py-3 font-semibold text-navy/60 hover:bg-navy/5 hover:text-navy"
+            >
+              <ArrowLeft className="size-4" /> Back
+            </button>
+          ) : null}
+          <button
+            type="submit"
+            disabled={pending}
+            className="inline-flex items-center gap-2 rounded-lg bg-navy px-7 py-3 font-semibold text-white transition-colors hover:bg-navy-light disabled:opacity-60"
+          >
+            {pending ? <Loader2 className="size-4 animate-spin" /> : null}
+            {last ? "Send" : optional.includes(step) ? "Continue" : "OK"}
+            {!last && !pending ? <ArrowRight className="size-4" /> : null}
+          </button>
+          <span className="ml-1 hidden text-xs text-navy/40 sm:inline">or press Enter</span>
+        </div>
+      </form>
     </div>
   );
 }

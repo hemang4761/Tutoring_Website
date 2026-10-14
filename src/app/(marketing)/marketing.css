@@ -12,8 +12,8 @@
     --text-color: #333;
     --light-text: #fff;
 
-    --font-heading: 'Merriweather', serif;
-    --font-body: 'Open Sans', sans-serif;
+    --font-heading: var(--font-merriweather), 'Merriweather', Georgia, serif;
+    --font-body: var(--font-open-sans), 'Open Sans', system-ui, sans-serif;
 
     --max-width: 1200px;
     --header-height: 70px;
@@ -1550,4 +1550,21 @@ footer a:hover {
     .booking-steps {
         grid-template-columns: 1fr;
     }
+}
+
+/* admin entry: kept quiet */
+.footer-admin {
+    margin-top: 1.25rem;
+    font-size: 0.7rem;
+    opacity: 0.35;
+}
+.footer-admin a:hover {
+    opacity: 1;
+    text-decoration: underline;
+}
+
+@media (max-width: 640px) {
+    nav ul { gap: 14px; align-items: center; justify-content: center; }
+    nav a { white-space: nowrap; font-size: 0.85rem; }
+    .btn-nav { padding: 6px 12px; }
 }

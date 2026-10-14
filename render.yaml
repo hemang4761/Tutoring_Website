@@ -1,63 +1,46 @@
+# Render blueprint for bclearns.com. See docs/go-live.md for the full walkthrough.
 services:
   - type: web
     name: bclearns
     runtime: node
-    plan: free
+    # free sleeps after 15 idle minutes (first visit after takes ~30s); starter stays awake
+    plan: starter
+    region: virginia
     buildCommand: npm ci && npm run build
     startCommand: npm start
-    healthCheckPath: /
+    healthCheckPath: /api/health
     envVars:
       - key: NODE_VERSION
-        value: "20"
+        value: "22"
       - key: MONGODB_URI
         sync: false
       - key: AUTH_SECRET
         generateValue: true
       - key: APP_URL
-        sync: false
+        value: https://bclearns.com
       - key: RESEND_API_KEY
         sync: false
       - key: EMAIL_FROM
-        sync: false
+        value: BCLearns <hello@bclearns.com>
       - key: EMAIL_REPLY_TO
-        value: contact.bclearns@gmail.com
+        value: hello@bclearns.com
       - key: CLOUDINARY_URL
         sync: false
       - key: CRON_SECRET
         generateValue: true
-      - key: SEED_ADMIN_EMAIL
-        sync: false
 
+  # day-before reminders to tutors, every hour
   - type: cron
     name: bclearns-reminders
     runtime: node
+    plan: starter
+    region: virginia
     schedule: "0 * * * *"
     buildCommand: echo skip
     startCommand: curl -fsS -H "Authorization: Bearer $CRON_SECRET" "$APP_URL/api/cron/reminders"
     envVars:
       - key: APP_URL
-        fromService:
-          name: bclearns
-          type: web
-          envVarKey: APP_URL
-      - key: CRON_SECRET
-        fromService:
-          name: bclearns
-          type: web
-          envVarKey: CRON_SECRET
-
-  - type: cron
-    name: bclearns-digest
-    runtime: node
-    schedule: "0 13 * * 1"
-    buildCommand: echo skip
-    startCommand: curl -fsS -H "Authorization: Bearer $CRON_SECRET" "$APP_URL/api/cron/digest"
-    envVars:
-      - key: APP_URL
-        fromService:
-          name: bclearns
-          type: web
-          envVarKey: APP_URL
+        value: https://bclearns.com
       - key: CRON_SECRET
         fromService:
           name: bclearns

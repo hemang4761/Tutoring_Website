@@ -81,7 +81,7 @@ export async function leadFunnel() {
   const [total, contacted, matched, active] = await Promise.all([
     Lead.countDocuments({}),
     Lead.countDocuments({ $or: [{ status: { $nin: ["new"] } }, { contactedAt: { $ne: null } }] }),
-    Lead.countDocuments({ $or: [{ assignedAt: { $ne: null } }, { status: { $in: ["assigned", "onboarding", "active", "paused"] } }] }),
+    Lead.countDocuments({ $or: [{ assignedAt: { $ne: null } }, { status: { $in: ["matched", "active", "paused", "ended"] } }] }),
     Lead.countDocuments({ $or: [{ activeAt: { $ne: null } }, { status: { $in: ["active", "paused"] } }] }),
   ]);
   return [

@@ -15,7 +15,7 @@ export default async function PortalHome() {
   const user = await requireUser(["family"]);
   await connectDB();
   if (!user.lead) {
-    return <PageHeader title="Welcome" description="Your account isn't linked to a student yet. Email us at contact.bclearns@gmail.com." />;
+    return <PageHeader title="Welcome" description="Your account isn't linked to a student yet. Email us at hello@bclearns.com." />;
   }
   const [lead, assignments, upcoming, recent] = await Promise.all([
     Lead.findById(user.lead).lean(),

@@ -17,7 +17,7 @@ export async function GET(req: Request) {
     filter.$or = [{ "parent.name": rx }, { "parent.email": rx }, { subjects: rx }];
   }
   const leads = await Lead.find(filter).sort({ createdAt: -1 }).lean();
-  const header = ["Parent", "Email", "Phone", "Students", "Subjects", "Status", "Source", "Created"];
+  const header = ["Parent", "Email", "Phone", "Students", "Subjects", "Status", "Source", "Created", "Submitted as", "Request", "Courses", "Hours per week", "College consulting"];
   const rows = leads.map((l) =>
     [
       l.parent.name,
@@ -28,6 +28,11 @@ export async function GET(req: Request) {
       l.status,
       l.source ?? "",
       new Date(l.createdAt).toISOString(),
+      l.intake?.respondent === "parent" ? "Parent/Guardian" : l.intake?.respondent === "student" ? "Student" : "",
+      l.intake?.tutoringRequest ?? "",
+      l.intake?.courses ?? "",
+      l.intake?.hoursPerWeek ?? "",
+      l.intake ? (l.intake.service === "college" || l.intake.alsoConsulting ? "Yes" : "No") : "",
     ]
       .map((v) => `"${String(v).replace(/"/g, '""')}"`)
       .join(","),
