@@ -169,7 +169,7 @@ nav a:hover {
 
 /* Hero Section */
 #hero {
-    background: linear-gradient(rgba(26, 44, 78, 0.9), rgba(26, 44, 78, 0.8)), url('media/phys.jpg');
+    background: linear-gradient(rgba(26, 44, 78, 0.9), rgba(26, 44, 78, 0.8)), url('/media/phys.jpg');
     background-size: cover;
     background-position: center;
     height: 90vh;
@@ -1489,5 +1489,65 @@ footer a {
 
     .pricing-value {
         font-size: 2.75rem;
+    }
+}
+/* booking cta (replaces the embedded google form) */
+.booking-cta {
+    background: #fafafa;
+    border: 1px solid #eee;
+    border-radius: 10px;
+    padding: 28px;
+    text-align: center;
+}
+
+.booking-steps {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 1.75rem;
+    text-align: left;
+}
+
+.booking-steps li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    color: var(--primary-navy);
+    font-size: 0.95rem;
+}
+
+.booking-steps span {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 999px;
+    background: var(--accent-gold);
+    color: var(--primary-navy);
+    font-family: var(--font-heading);
+}
+
+.booking-apply {
+    margin-top: 1.25rem;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.booking-apply a {
+    color: var(--primary-navy);
+    font-weight: 600;
+    text-decoration: underline;
+}
+
+footer a:hover {
+    color: var(--accent-gold);
+}
+
+@media (max-width: 640px) {
+    .booking-steps {
+        grid-template-columns: 1fr;
     }
 }
